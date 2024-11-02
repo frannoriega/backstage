@@ -34,7 +34,7 @@ with-nextjs/out
 
 # local env files
 */.env*.local
-
+.env*.local
 
 .DS_Store
 report.html
