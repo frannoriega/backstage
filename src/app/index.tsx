@@ -130,11 +130,11 @@ XAQH9Md7gIR105uK6gwA3QECAwEAAQ==
   }
 
   return (
-    <View>
-      <Pressable className="w-10" onPress={signIn}>
+    <View className='flex-1 flex-col gap-4 items-center w-full h-fit'>
+      <Pressable className="items-center w-full h-fit bg-red-200" onPress={signIn}>
         <Text>Inicia sesión con Google</Text>
       </Pressable>
-      <Pressable className='w-full h-full bg-blue-100' onPress={decrypt}>
+      <Pressable className='items-center w-full h-fit bg-blue-200' onPress={decrypt}>
         <Text>Apretame</Text>
       </Pressable>
     </View>
