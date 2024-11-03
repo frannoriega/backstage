@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { GoogleSignin, User, statusCodes } from '@react-native-google-signin/google-signin';
-import { Image } from 'expo-image'
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import { cssInterop, verifyInstallation } from 'nativewind'
-import crypto from 'react-native-quick-crypto'
-import { Buffer } from 'buffer'
+import React, { useEffect } from "react";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { Image } from "expo-image";
+import { View, Text, Pressable } from "react-native";
+import { router } from "expo-router";
+import { cssInterop, verifyInstallation } from "nativewind";
+import crypto from "react-native-quick-crypto";
+import { Buffer } from "buffer";
 
 cssInterop(Image, { className: "style" });
 
@@ -25,12 +28,12 @@ export default function Index() {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       // validate user info
-      router.replace(`/security/(tabs)`)
+      router.replace(`/security/(tabs)`);
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User cancelled the sign-in process');
+        console.log("User cancelled the sign-in process");
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('Sign in is in progress');
+        console.log("Sign in is in progress");
       } else {
         console.error(error);
       }
@@ -91,7 +94,7 @@ uccSjSfbnd81xkVuCyFnUWcFBGrzMTJlOKWaHLGQD7M9Hen0x6dLcyvUyy69Z5Bx
 hr3XRZtQnp6282WnzZwvrcOjmJ9qtJ5Hd0CByK5lmKjrDHK8LsRMGLfttoSnQqw1
 hkx6eQ7KDLJNMLOpwzY5XxbwByHI
 -----END PRIVATE KEY-----
-  `
+  `;
     const pubKey = `
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAjz08H4/lHa15oXntISr7
@@ -107,17 +110,17 @@ S2IF4BcdMuDECiBMQ5tVkGYjaUb4/C3Fk+dtNJo1bgr2T9Y+YUw0kMlgu6nGkSYx
 YEnMVrT+yXWdnjH0WDOanzvSPc13HBDnCbhWfVhYnCwD3yiymWS0yWS/SWnNLuju
 XAQH9Md7gIR105uK6gwA3QECAwEAAQ==
 -----END PUBLIC KEY-----
-`
+`;
     const e = crypto.publicEncrypt(
       {
         key: pubKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: 'sha256'
+        oaepHash: "sha256",
       },
-      'Banana'
-    )
-    const encrypted = `CtY9njwL/uqK5uhCuYgpu4IAnwS0TWbi11ub/An8XMHrrC1x5kUWpmK8Xq6ImYMZp6LDZuXUZbkhwY1KdWNmRka+F6+kZDPfaiFYWI2KIYmlupmQBbzvX488iMShqLab7YY4qVozFQMgsouOA+txJjLw8lHbblejAEq/xiPe5Qvgggq35tc0zlSE/60m3/E7cdatZ1H884y5wojGgDqmb98WxGNGyl8+Srt1Aucd/4VDlfPhUlJvCgrZNinnkcUxqvz5zazzErhcDkBAmmEq7wD/SGn8sbKFuubNQPkNbr12DmjNZH4c+fgU5wl+hY/FA21wVSIcOQBu40ytpNBZjnj4WPRgkHBBzJm89omGbgLHUelxFZsJgf944ygYDhHl4gQkQ3iOAXidpKQOrBYWd0gEdvDeiJinekoNT1UBPhZKFV52Ko1gqepPP2ZHBxE04TykKVfiVHHlR16V0zWa2dmxvhvFEVsqtQqcU1QbZtJZxoj8taiaaEJ3PeieCwYuSIR3wJTKgjMr0Q+oDBNhwuL9ZpBwa2G9c7g3OdAFqhk8vZ9tgJUBum7ga692M4/dXEJbpbGRx7m+gyv9tZ5pW7TgeeDpMRMk9/zeHFq+KaOrhMgxsZEnMINHXylA875t7l5u9HIdx9Z/CE4GL4sTanI+exRSuMmCKSR3Hg/XVX0=`
-    const data = Buffer.from(encrypted, 'base64')
+      "Banana",
+    );
+    const encrypted = `CtY9njwL/uqK5uhCuYgpu4IAnwS0TWbi11ub/An8XMHrrC1x5kUWpmK8Xq6ImYMZp6LDZuXUZbkhwY1KdWNmRka+F6+kZDPfaiFYWI2KIYmlupmQBbzvX488iMShqLab7YY4qVozFQMgsouOA+txJjLw8lHbblejAEq/xiPe5Qvgggq35tc0zlSE/60m3/E7cdatZ1H884y5wojGgDqmb98WxGNGyl8+Srt1Aucd/4VDlfPhUlJvCgrZNinnkcUxqvz5zazzErhcDkBAmmEq7wD/SGn8sbKFuubNQPkNbr12DmjNZH4c+fgU5wl+hY/FA21wVSIcOQBu40ytpNBZjnj4WPRgkHBBzJm89omGbgLHUelxFZsJgf944ygYDhHl4gQkQ3iOAXidpKQOrBYWd0gEdvDeiJinekoNT1UBPhZKFV52Ko1gqepPP2ZHBxE04TykKVfiVHHlR16V0zWa2dmxvhvFEVsqtQqcU1QbZtJZxoj8taiaaEJ3PeieCwYuSIR3wJTKgjMr0Q+oDBNhwuL9ZpBwa2G9c7g3OdAFqhk8vZ9tgJUBum7ga692M4/dXEJbpbGRx7m+gyv9tZ5pW7TgeeDpMRMk9/zeHFq+KaOrhMgxsZEnMINHXylA875t7l5u9HIdx9Z/CE4GL4sTanI+exRSuMmCKSR3Hg/XVX0=`;
+    const data = Buffer.from(encrypted, "base64");
     const decrypted = crypto.privateDecrypt(
       {
         key: key,
@@ -125,26 +128,31 @@ XAQH9Md7gIR105uK6gwA3QECAwEAAQ==
         // same hashing function and padding scheme that we used to
         // encrypt the data in the previous step
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: 'sha256'
+        oaepHash: "sha256",
       },
-      data
-    )
-    console.log(decrypted.toString('utf8'))
-
+      data,
+    );
+    console.log(decrypted.toString("utf8"));
   }
 
   return (
-    <View className='flex-1 flex-col gap-4 items-center w-full h-full'>
-      <View className='py-8 flex-initial flex-col gap-4 items-center w-full h-min'>
-        <Image source={require('../../assets/images/logo-fiesta.png')} className='w-4/5 h-2/5' contentFit='contain' />
-        <Text className='text-white text-6xl'>Backstage</Text>
+    <View className="flex-1 flex-col gap-4 items-center w-full h-full">
+      <View className="py-8 flex-initial flex-col gap-4 items-center w-full h-min">
+        <Image
+          source={require("../../assets/images/logo-fiesta.png")}
+          className="w-4/5 h-2/5"
+          contentFit="contain"
+        />
+        <Text className="text-white text-6xl">Backstage</Text>
       </View>
       <View>
-        <Pressable className="items-center w-full h-fit bg-red-200" onPress={signIn}>
+        <Pressable
+          className="items-center w-full h-fit bg-red-200"
+          onPress={signIn}
+        >
           <Text>Inicia sesión con Google</Text>
         </Pressable>
       </View>
     </View>
   );
-};
-
+}

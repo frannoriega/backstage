@@ -5,5 +5,5 @@ export default function Invalid() {
     <View>
       <Text>Usuario inválido</Text>
     </View>
-  )
+  );
 }

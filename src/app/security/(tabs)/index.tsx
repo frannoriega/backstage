@@ -1,48 +1,40 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { CameraView, Camera } from "expo-camera";
-import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
-import crypto from 'react-native-quick-crypto'
-import Ajv from "ajv"
-import base64 from "react-native-base64"
-import { Buffer } from "buffer"
+import { router, useFocusEffect } from "expo-router";
+import crypto from "react-native-quick-crypto";
+import Ajv from "ajv";
+import { Buffer } from "buffer";
 
-const ajv = new Ajv()
+const ajv = new Ajv();
 
 // TODO(fran): Load private key from secure storage
-const key = ''
+const key = "";
 
 type User = {
-  name: string,
-  lastname: string,
-  email: string,
-  photo: string
-}
+  name: string;
+  lastname: string;
+  email: string;
+  photo: string;
+};
 
 const userSchema = {
-  type:
-    "object"
-  ,
+  type: "object",
   properties: {
     name: {
-      type: "string"
+      type: "string",
     },
     lastname: {
-      type: "string"
+      type: "string",
     },
     email: {
-      type: "string"
+      type: "string",
     },
     photo: {
-      type: "string"
-    }
+      type: "string",
+    },
   },
-  required: [
-    "name",
-    "lastname",
-    "email",
-    "photo"
-  ],
+  required: ["name", "lastname", "email", "photo"],
 };
 
 function decrypt(data: string): User {
@@ -55,9 +47,9 @@ function decrypt(data: string): User {
       padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
       oaepHash: "sha256",
     },
-    Buffer.from(data, 'base64')
-  )
-  return JSON.parse(decrypted.toString('utf8'))
+    Buffer.from(data, "base64"),
+  );
+  return JSON.parse(decrypted.toString("utf8"));
 }
 
 export default function Security() {
@@ -66,12 +58,12 @@ export default function Security() {
 
   useFocusEffect(
     useCallback(() => {
-      setScanned(false)
+      setScanned(false);
 
       return () => {
-        setScanned(true)
-      }
-    }, [])
+        setScanned(true);
+      };
+    }, []),
   );
 
   useEffect(() => {
@@ -83,26 +75,25 @@ export default function Security() {
     getCameraPermissions();
   }, []);
 
-
-  function handleBarcodeScanned({ data }: { type: any, data: string }) {
-    setScanned(true)
-    const user = decrypt(data)
-    console.log(user)
-    const isValid = ajv.validate(userSchema, user)
+  function handleBarcodeScanned({ data }: { type: any; data: string }) {
+    setScanned(true);
+    const user = decrypt(data);
+    console.log(user);
+    const isValid = ajv.validate(userSchema, user);
     if (!isValid) {
-      router.push('/security/invalid')
+      router.push("/security/invalid");
     } else {
       router.push({
-        pathname: '/security/user',
+        pathname: "/security/user",
         params: {
           name: user.name,
           lastname: user.lastname,
           email: user.email,
-          photo: user.photo
-        }
-      })
+          photo: user.photo,
+        },
+      });
     }
-  };
+  }
 
   if (hasPermission === null) {
     return <Text>Requesting for camera permission</Text>;

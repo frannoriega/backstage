@@ -1,4 +1,4 @@
-module.exports = function(api) {
+export default function (api) {
   api.cache(true);
   return {
     presets: [
@@ -7,15 +7,15 @@ module.exports = function(api) {
     ],
     plugins: [
       [
-        'module-resolver',
+        "module-resolver",
         {
           alias: {
-            'crypto': 'react-native-quick-crypto',
-            'stream': 'readable-stream',
-            'buffer': '@craftzdog/react-native-buffer',
+            crypto: "react-native-quick-crypto",
+            stream: "readable-stream",
+            buffer: "@craftzdog/react-native-buffer",
           },
         },
       ],
-    ]
+    ],
   };
-};
+}

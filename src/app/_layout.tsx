@@ -7,18 +7,28 @@ import { StyleSheet } from "react-native";
 export default function RootLayout() {
   return (
     <Stack>
-      <Stack.Screen name="index" options={{title: 'Backstage', contentStyle: style.all, headerShown: false}}/>
-      <Stack.Screen name="security/(tabs)" options={{title: 'Seguridad', headerShown: false}} />
+      <Stack.Screen
+        name="index"
+        options={{
+          title: "Backstage",
+          contentStyle: style.all,
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="security/(tabs)"
+        options={{ title: "Seguridad", headerShown: false }}
+      />
     </Stack>
   );
 }
 
 const style = StyleSheet.create({
   all: {
-    backgroundColor: 'black'
+    backgroundColor: "black",
   },
   header: {
-    backgroundColor: 'black',
-    color: 'white'
-  }
-})
+    backgroundColor: "black",
+    color: "white",
+  },
+});

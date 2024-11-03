@@ -5,5 +5,5 @@ export default function Activity() {
     <View>
       <Text>Actividad</Text>
     </View>
-  )
+  );
 }

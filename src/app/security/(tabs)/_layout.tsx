@@ -1,16 +1,12 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { EventArg } from "@react-navigation/native";
-import { Slot, Tabs, router, useLocalSearchParams } from "expo-router";
-import { cssInterop } from "nativewind";
+import { Slot, router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
-
 export default function SecurityLayout() {
   async function signOut() {
-    await GoogleSignin.signOut()
-    router.replace("/")
+    await GoogleSignin.signOut();
+    router.replace("/");
   }
 
   return (
@@ -30,5 +26,5 @@ export default function SecurityLayout() {
         </Pressable>
       </View>
     </SafeAreaView>
-  )
+  );
 }
