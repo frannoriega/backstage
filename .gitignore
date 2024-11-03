@@ -52,3 +52,7 @@ report.html
 GoogleService-Info.plist
 
 google-services.json
+
+.expo
+
+keys/*
