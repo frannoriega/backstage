@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { GoogleSignin, User, statusCodes } from '@react-native-google-signin/google-signin';
-import { Button, View, Text, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image'
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { verifyInstallation } from 'nativewind'
+import { cssInterop, verifyInstallation } from 'nativewind'
 import crypto from 'react-native-quick-crypto'
 import { Buffer } from 'buffer'
+
+cssInterop(Image, { className: "style" });
 
 export default function Index() {
   verifyInstallation();
@@ -21,7 +24,8 @@ export default function Index() {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      router.replace('/security')
+      // validate user info
+      router.replace(`/security/(tabs)`)
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('User cancelled the sign-in process');
@@ -130,13 +134,16 @@ XAQH9Md7gIR105uK6gwA3QECAwEAAQ==
   }
 
   return (
-    <View className='flex-1 flex-col gap-4 items-center w-full h-fit'>
-      <Pressable className="items-center w-full h-fit bg-red-200" onPress={signIn}>
-        <Text>Inicia sesión con Google</Text>
-      </Pressable>
-      <Pressable className='items-center w-full h-fit bg-blue-200' onPress={decrypt}>
-        <Text>Apretame</Text>
-      </Pressable>
+    <View className='flex-1 flex-col gap-4 items-center w-full h-full'>
+      <View className='py-8 flex-initial flex-col gap-4 items-center w-full h-min'>
+        <Image source={require('../../assets/images/logo-fiesta.png')} className='w-4/5 h-2/5' contentFit='contain' />
+        <Text className='text-white text-6xl'>Backstage</Text>
+      </View>
+      <View>
+        <Pressable className="items-center w-full h-fit bg-red-200" onPress={signIn}>
+          <Text>Inicia sesión con Google</Text>
+        </Pressable>
+      </View>
     </View>
   );
 };
