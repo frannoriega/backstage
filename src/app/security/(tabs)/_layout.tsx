@@ -1,5 +1,5 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { Slot, router } from "expo-router";
+import { router, Slot } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
