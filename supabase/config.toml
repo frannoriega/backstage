@@ -186,6 +186,12 @@ verify_enabled = true
 # otp_length = 6
 # template = "Your code is {{ .Code }} ."
 # max_frequency = "10s"
+[auth.external.google]
+enabled=true
+client_id = "336409061120-879kuqilgumm8h397klnrkm1g3vhmq61.apps.googleusercontent.com"
+secret = "env(GOOGLE_SECRET)"
+# Overrides the default auth redirectUrl.
+redirect_uri = "http://localhost:54321/auth/v1/callback"
 
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,

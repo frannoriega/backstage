@@ -9,7 +9,8 @@ import { router } from "expo-router";
 import { cssInterop, verifyInstallation } from "nativewind";
 import AuthButton from "@/components/Auth.native";
 import { supabase } from "@/utils/supabase";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { setPK, setSession, setUser } from "@/utils/storage";
 
 cssInterop(Image, { className: "style" });
 
@@ -17,12 +18,9 @@ export default function Index() {
   verifyInstallation();
 
   useEffect(() => {
-    console.log(process.env);
-    console.log(process.env.IOS_CLIENT_ID);
     GoogleSignin.configure({
       webClientId:
         "336409061120-879kuqilgumm8h397klnrkm1g3vhmq61.apps.googleusercontent.com",
-      iosClientId: process.env.IOS_CLIENT_ID,
       offlineAccess: false,
     });
   }, []);
@@ -31,20 +29,27 @@ export default function Index() {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log(userInfo);
       if (userInfo.data.idToken) {
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: "google",
-          token: userInfo.data.idToken,
-          options: {
-            redirectTo: "http://localhost:3000/callback",
+          token: userInfo.data?.idToken || "",
+        });
+        if (error || !data.session) {
+          // TODO(fran): Handle this gracefully
+          throw new Error(`An error occurred ${error}`);
+        }
+        await setSession(JSON.stringify(data.session));
+        const res = await supabase
+          .from("users")
+          .select()
+          .eq("email", userInfo.data?.user.email);
+        await setUser(JSON.stringify(res.data[0]));
+        const pk = await supabase.functions.invoke("getPk", {
+          headers: {
+            Authorization: `Bearer ${data.session?.access_token}`,
           },
         });
-        console.log("Error: ", error);
-        console.log(data);
-        await AsyncStorage.setItem("session", data.session?.access_token);
-        await AsyncStorage.setItem("user", JSON.stringify(data.user));
-        console.log(await AsyncStorage.getItem("session"));
+        await setPK(pk.data);
         router.push("/security/(tabs)");
       } else {
         throw new Error("no ID token present!");
