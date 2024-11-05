@@ -10,7 +10,8 @@ import { cssInterop, verifyInstallation } from "nativewind";
 import AuthButton from "@/components/Auth.native";
 import { supabase } from "@/utils/supabase";
 
-import { setPK, setSession, setUser } from "@/utils/storage";
+import { SignInError, auth } from "@/services/auth";
+import { store } from "@/services/storage";
 
 cssInterop(Image, { className: "style" });
 
@@ -27,43 +28,20 @@ export default function Index() {
 
   const signIn = async () => {
     try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      if (userInfo.data.idToken) {
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: userInfo.data?.idToken || "",
-        });
-        if (error || !data.session) {
-          // TODO(fran): Handle this gracefully
-          throw new Error(`An error occurred ${error}`);
-        }
-        await setSession(JSON.stringify(data.session));
-        const res = await supabase
-          .from("users")
-          .select()
-          .eq("email", userInfo.data?.user.email);
-        await setUser(JSON.stringify(res.data[0]));
-        const pk = await supabase.functions.invoke("getPk", {
-          headers: {
-            Authorization: `Bearer ${data.session?.access_token}`,
-          },
-        });
-        await setPK(pk.data);
-        router.push("/security/(tabs)");
-      } else {
-        throw new Error("no ID token present!");
-      }
+      const session = await auth.signIn()
+      await store.setSession(session)
+      const res = await supabase
+        .from("roles")
+        .select("type, users(name, lastname, email)")
+        .eq("users.email", session.user.email);
+      await store.setUser(res.data[0])
+      router.push("/security/(tabs)");
     } catch (error: any) {
-      console.log("Sign in error: ", error);
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // user cancelled the login flow
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        // operation (e.g. sign in) is in progress already
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        // play services not available or outdated
+      if (error instanceof SignInError) {
+        //TODO: Handle this gracefully
+        console.error("Error occurred during signin: ", error)
       } else {
-        // some other error happened
+        console.error(error)
       }
     }
   };

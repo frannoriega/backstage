@@ -1,4 +1,3 @@
-import { getSession, setPK } from "@/utils/storage";
 import { supabase } from "@/utils/supabase";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { router, Slot } from "expo-router";
@@ -8,6 +7,7 @@ import base64 from "react-native-base64";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Activity, LogOut, QrCode } from "lucide-react-native";
 import { cssInterop } from "nativewind";
+import { store } from "@/services/storage";
 
 cssInterop(QrCode, { className: "style" });
 cssInterop(Activity, { className: "style" });
@@ -21,15 +21,14 @@ export default function SecurityLayout() {
 
   useEffect(() => {
     const getKey = async () => {
-      const sessionStr = await getSession();
-      if (sessionStr) {
-        const session = JSON.parse(sessionStr);
+      const session = await store.getSession();
+      if (session) {
         const pk = await supabase.functions.invoke("getPk", {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
-        setPK(base64.decode(pk.data));
+        store.setPrivateKey(base64.decode(pk.data));
       }
     };
 

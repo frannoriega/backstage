@@ -6,7 +6,7 @@ import crypto from "react-native-quick-crypto";
 import Ajv from "ajv";
 import { Buffer } from "buffer";
 import { supabase } from "@/utils/supabase";
-import { getPK, getUser } from "@/utils/storage";
+import { store } from "@/services/storage";
 
 const ajv = new Ajv();
 
@@ -37,7 +37,7 @@ const userSchema = {
 };
 
 async function decrypt(data: string): Promise<User> {
-  const key = await getPK();
+  const key = await store.getPrivateKey();
   const decrypted = crypto.privateDecrypt(
     {
       key, // In order to decrypt the data, we need to specify the
@@ -81,7 +81,7 @@ export default function Security() {
     if (!isValid) {
       router.push("/security/invalid");
     } else {
-      const controller = await getUser();
+      const controller = await store.getUser();
       const { data, error } = await supabase
         .from("roles")
         .select("user, type, users(name, lastname, email)")
