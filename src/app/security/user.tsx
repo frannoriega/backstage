@@ -1,31 +1,18 @@
-import { useBackstage } from "@/hooks/useBackstage";
-import { router, useLocalSearchParams } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Credential } from "@/services/credentials";
+import { useLocalSearchParams } from "expo-router";
+import { Text, View } from "react-native";
 
 export default function ScannedUserPage() {
-  const { controllerId, name, lastname, email, role, photo } =
+  const { credential: encodedCredential }: { credential: string } =
     useLocalSearchParams();
-  const { user, canAccess, registerAccess } = useBackstage(
-    Number(controllerId),
-    email,
-    "S1",
-  );
 
-  async function grantAccess() {
-    await registerAccess();
-    console.log("Acceso registrado");
-    router.back();
-  }
+  const credential = Credential.fromBase64(encodedCredential);
 
   return (
     <View>
       <Text>
-        Datos del usuario: {name}, {lastname}, {role}, {photo},{" "}
-        {JSON.stringify(user)}
+        Datos del usuario: {credential.name}, {credential.photo}
       </Text>
-      <Pressable onPress={grantAccess} disabled={!canAccess}>
-        <Text>Dar acceso</Text>
-      </Pressable>
     </View>
   );
 }

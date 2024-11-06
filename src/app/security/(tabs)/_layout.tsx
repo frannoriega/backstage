@@ -1,5 +1,4 @@
 import { supabase } from "@/utils/supabase";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { router, Slot } from "expo-router";
 import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -8,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Activity, LogOut, QrCode } from "lucide-react-native";
 import { cssInterop } from "nativewind";
 import { store } from "@/services/storage";
+import { auth } from "@/services/auth";
 
 cssInterop(QrCode, { className: "style" });
 cssInterop(Activity, { className: "style" });
@@ -15,7 +15,7 @@ cssInterop(LogOut, { className: "style" });
 
 export default function SecurityLayout() {
   async function signOut() {
-    await GoogleSignin.signOut();
+    await auth.signOut();
     router.replace("/");
   }
 
@@ -33,18 +33,6 @@ export default function SecurityLayout() {
     };
 
     getKey();
-  }, []);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data, error } = await supabase
-        .from("roles")
-        .select("user, type, users(name, lastname, email)")
-        .eq("users.email", "frannoriega.92@gmail.com");
-      console.log(data);
-    };
-
-    getUser();
   }, []);
 
   return (

@@ -1,55 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Text, View, StyleSheet } from "react-native";
-import { CameraView, Camera } from "expo-camera";
+import { Text, View, StyleSheet, Button } from "react-native";
+import { Camera } from "expo-camera";
 import { router, useFocusEffect } from "expo-router";
-import crypto from "react-native-quick-crypto";
-import Ajv from "ajv";
-import { Buffer } from "buffer";
-import { supabase } from "@/utils/supabase";
 import { store } from "@/services/storage";
-
-const ajv = new Ajv();
-
-type User = {
-  name: string;
-  lastname: string;
-  email: string;
-  photo: string;
-};
-
-const userSchema = {
-  type: "object",
-  properties: {
-    name: {
-      type: "string",
-    },
-    lastname: {
-      type: "string",
-    },
-    email: {
-      type: "string",
-    },
-    photo: {
-      type: "string",
-    },
-  },
-  required: ["name", "lastname", "email", "photo"],
-};
-
-async function decrypt(data: string): Promise<User> {
-  const key = await store.getPrivateKey();
-  const decrypted = crypto.privateDecrypt(
-    {
-      key, // In order to decrypt the data, we need to specify the
-      // same hashing function and padding scheme that we used to
-      // encrypt the data in the previous step
-      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-      oaepHash: "sha256",
-    },
-    Buffer.from(data, "base64"),
-  );
-  return JSON.parse(decrypted.toString("utf8"));
-}
+import { credentialService, Credential } from "@/services/credentials";
 
 export default function Security() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -74,30 +28,29 @@ export default function Security() {
     getCameraPermissions();
   }, []);
 
-  async function handleBarcodeScanned({ data }: { type: any; data: string }) {
+  async function handleBarcodeScanned() {
+    //({ data }: { type: any; data: string }) {
     setScanned(true);
-    const user = await decrypt(data);
-    const isValid = ajv.validate(userSchema, user);
-    if (!isValid) {
-      router.push("/security/invalid");
-    } else {
-      const controller = await store.getUser();
-      const { data, error } = await supabase
-        .from("roles")
-        .select("user, type, users(name, lastname, email)")
-        .eq("users.email", user.email);
-      console.log("Controller: ", controller);
-      router.push({
-        pathname: "/security/user",
-        params: {
-          controllerId: JSON.parse(controller).id,
-          name: data[0].users.name,
-          lastname: data[0].users.lastname,
-          email: data[0].users.email,
-          role: data[0].type,
-          photo: user.photo,
-        },
-      });
+    try {
+      const data = `GxzStVTgc6ZcazNpy/FXtFKfFXGH6KPgLITzUSG38Mad+XlhCV/ZAS2F/UPyvguuztPvmyHRdWko3E+RiMLpQTNNeaAuO8JvBR5fmwfIqa+RGhfbz3SCKcIynsLXXarXqJLbS5fyeplD8kQnv7J99rrvEBy+EtejlSLDekAkjtevqMfv4Gh+RSA7HDniMyDkUeA2vxIHHQEuvEjQMVHnB9bVKxRgWhUYAZgyAixwWQkf47m6XjmCkg4C8BbZbwzg5wF9D3hdRECx1KyVSHY5YHq6XlqPuZAu/7yT/149ue4LC1kAwwhHzRxeHXGh8FNT1ZQq+l7OGEeAk7PURGRH/E9LCBNO9dVXfChDkRNqAfvAKwuljC/S65RLiaK+a+idB9GoiCpbKn5cE4QsL3ep3wfRpOxinCtoHjmRuiJraFR2SatCy8f6w+KLDBYxm8Sra8z7mDpuxwNtwQXKE8k+mp8w2HKEpUykA2Yfi56H5RXXtN28+htnXZFS9kSmM1jqge5WWziex6g1WCrBZ6sBTO2lNtqNgvdY5G9ZmB++CSGL7KtvYYkdTI3GY1Hb3k+hOyq0xV1GriSGh09B8ceCVB1r5Ixj2eBE7shKlbRDv3kh0QRS/CoZQd6/QnTmJom5Lkb6POWcGJDYLjU5/UPGIhdnuCB45Q7csprUA1wBnE0=`;
+      const credential = await credentialService.decrypt(data);
+      const controller = await store.getController();
+      if (controller) {
+        router.push({
+          pathname: "/security/user",
+          params: {
+            controllerId: controller.id,
+            gate: controller.gate,
+            credential: Credential.toBase64(credential),
+          },
+        });
+      } else {
+        //TODO: Handle error
+        router.push("/");
+      }
+    } catch (error) {
+      console.log(error);
+      //TODO: Handle error
     }
   }
 
@@ -108,15 +61,16 @@ export default function Security() {
     return <Text>No access to camera</Text>;
   }
 
+  // <CameraView
+  //   onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+  //   barcodeScannerSettings={{
+  //     barcodeTypes: ["qr", "pdf417"],
+  //   }}
+  //   style={StyleSheet.absoluteFillObject}
+  // />
   return (
     <View style={styles.container}>
-      <CameraView
-        onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr", "pdf417"],
-        }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <Button title="test" onPress={() => handleBarcodeScanned()} />
     </View>
   );
 }
