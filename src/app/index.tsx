@@ -31,14 +31,11 @@ export default function Index() {
           //TODO: Handle this gracefully
           case SignInErrorReason.UNAUTHORIZED:
             //TODO: Handle unauthorized error
-            console.log("unauthorized");
             break;
           default:
-            console.error("Error occurred during signin: ", error);
             break;
         }
       } else {
-        console.error(error);
       }
     }
   };

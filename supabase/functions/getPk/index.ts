@@ -5,8 +5,6 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-console.log("Hello from Functions!");
-
 Deno.serve(async (req) => {
   return new Response(Deno.env.get("CREDENTIAL_PRIVATE_KEY"), {
     headers: { "Content-Type": "text/plain" },

@@ -2,10 +2,9 @@ import { supabase } from "@/utils/supabase";
 import { DbError, DbErrorReason } from "./errors";
 
 enum Gate {
-  S1,
-  S2,
-  S3,
-  S4,
+  S1 = "S1",
+  S2 = "S2",
+  S3 = "S3",
 }
 
 interface Controller {

@@ -3,6 +3,7 @@ import { store } from "./storage";
 import Ajv from "ajv";
 import base64 from "react-native-base64";
 import { Buffer } from "buffer";
+import { Role, User } from "./db/users";
 
 const ajv = new Ajv();
 
@@ -30,11 +31,11 @@ class Credential {
   readonly lastname: string;
   readonly email: string;
   readonly dni: number;
-  readonly role: string;
+  readonly role: Role;
   // Base64 representation of the photo
   readonly photo: string;
-  readonly valid_from: string;
-  readonly valid_to: string;
+  readonly valid_from?: string;
+  readonly valid_to?: string;
 
   constructor(
     id: number,
@@ -42,10 +43,10 @@ class Credential {
     lastname: string,
     email: string,
     dni: number,
-    role: string,
+    role: Role,
     photo: string,
-    valid_from: string,
-    valid_to: string,
+    valid_from?: string,
+    valid_to?: string,
   ) {
     this.id = id;
     this.name = name;
@@ -94,7 +95,7 @@ const credentialSchema = {
       type: "number",
     },
     role: {
-      enum: ["A", "B", "C", "D", "E", "P", "X"],
+      enum: [Role.A, Role.B, Role.C, Role.D, Role.E, Role.P, Role.X],
     },
     photo: {
       type: "string",
@@ -108,7 +109,7 @@ const credentialSchema = {
       nullable: true,
     },
   },
-  required: ["name", "lastname", "email", "photo"],
+  required: ["id", "name", "lastname", "email", "dni", "role", "photo"],
 };
 
 class CredentialService {
@@ -130,7 +131,6 @@ class CredentialService {
       Buffer.from(credentials, "base64"),
     );
     const parsed = JSON.parse(decrypted.toString("utf8"));
-    console.log(parsed);
     const isValid = ajv.validate(credentialSchema, parsed);
     if (!isValid) {
       throw new CredentialError(
@@ -149,6 +149,18 @@ class CredentialService {
       parsed.valid_from,
       parsed.valid_to,
     );
+  }
+
+  validate(user: User, credential: Credential): boolean {
+    let valid = true;
+    valid = valid && user.name === credential.name;
+    valid = valid && user.lastname === credential.lastname;
+    valid = valid && user.email === credential.email;
+    valid = valid && user.dni === credential.dni;
+    valid = valid && user.role.valueOf() === credential.role.valueOf();
+    valid = valid && user.valid_from === (credential.valid_from ?? null);
+    valid = valid && user.valid_to === (credential.valid_to ?? null);
+    return valid;
   }
 }
 

@@ -32,15 +32,13 @@ export default function Security() {
     //({ data }: { type: any; data: string }) {
     setScanned(true);
     try {
-      const data = `GxzStVTgc6ZcazNpy/FXtFKfFXGH6KPgLITzUSG38Mad+XlhCV/ZAS2F/UPyvguuztPvmyHRdWko3E+RiMLpQTNNeaAuO8JvBR5fmwfIqa+RGhfbz3SCKcIynsLXXarXqJLbS5fyeplD8kQnv7J99rrvEBy+EtejlSLDekAkjtevqMfv4Gh+RSA7HDniMyDkUeA2vxIHHQEuvEjQMVHnB9bVKxRgWhUYAZgyAixwWQkf47m6XjmCkg4C8BbZbwzg5wF9D3hdRECx1KyVSHY5YHq6XlqPuZAu/7yT/149ue4LC1kAwwhHzRxeHXGh8FNT1ZQq+l7OGEeAk7PURGRH/E9LCBNO9dVXfChDkRNqAfvAKwuljC/S65RLiaK+a+idB9GoiCpbKn5cE4QsL3ep3wfRpOxinCtoHjmRuiJraFR2SatCy8f6w+KLDBYxm8Sra8z7mDpuxwNtwQXKE8k+mp8w2HKEpUykA2Yfi56H5RXXtN28+htnXZFS9kSmM1jqge5WWziex6g1WCrBZ6sBTO2lNtqNgvdY5G9ZmB++CSGL7KtvYYkdTI3GY1Hb3k+hOyq0xV1GriSGh09B8ceCVB1r5Ixj2eBE7shKlbRDv3kh0QRS/CoZQd6/QnTmJom5Lkb6POWcGJDYLjU5/UPGIhdnuCB45Q7csprUA1wBnE0=`;
+      const data = `QoRkHbE4zOhBXgGPvd8/B2upkf0g56fN71Z9dHVM2acZufe3zXx1o/+1IPUkoBcvMeEPfLxJhz/MQDGfLs30HNOPtiP+rxYgjhz8kUCe4qP/+ZMe1s+WFUilBWTi6yWbwUxCZ/9p093Xp/JkdKSmmS1EHt0Px6eD/1xxPBIe3fSBqMf1BcoDPcizsibxTLfXYAbfkNP9h6KMXk9pZsyL07l3tFop8MKij6XZYxHbDvJKgvL49T8WHZNvel1pRWSX4cqykyyedjo6gu1aHTNiVkq5VsrLmh9oTJsKNxb70wHMsyYzT3LrrGXCskgSiyFFdoLi2bn2riEDmkON1INivyjfYo3FjfNjkW8BKmyyRKXCmFec+138EKDpMINmncOFmerT37DYYaS+Yji1cUFeUhNDZN6caf2DN59dxq03GkLh2bSa/jjo8dEeSKd3eGtXg+e3DZCSQzzjLAvFkcb6DTbHcoMtLYcT3gcJGzwhxcP4o4HlpkjX2/alZWrfWxo5AptkORIqOxZKcPkVNlC4DSmWezBLoRIUgbrbVknBv7ATNxMYABzCWTUXEJRpsGnB2ZZNsm11Iu6sMgdBFTBkca+5gV20NVhee2ALhZ/pXf/CAAulAKDc1YTJ+KQGn0+5p3E0vTWTB2dsCTV39ZGnDXQ+ayXpXJ2We5w4PZwVk/c=`;
       const credential = await credentialService.decrypt(data);
       const controller = await store.getController();
       if (controller) {
         router.push({
           pathname: "/security/user",
           params: {
-            controllerId: controller.id,
-            gate: controller.gate,
             credential: Credential.toBase64(credential),
           },
         });
@@ -49,7 +47,6 @@ export default function Security() {
         router.push("/");
       }
     } catch (error) {
-      console.log(error);
       //TODO: Handle error
     }
   }

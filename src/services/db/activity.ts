@@ -1,106 +1,93 @@
-import { Credential } from "@/services/credentials";
 import { supabase } from "@/utils/supabase";
-import { Controller } from "@/services/db/controllers";
+import { Controller, Gate } from "@/services/db/controllers";
+import { Role, User } from "./users";
 
-function roleCanAccess(role: string, ingresses: number): boolean {
-  switch (role) {
-    case "A":
-    case "B":
-    case "D":
-    case "E":
-    case "P":
-      return ingresses < 2;
-    case "C":
-      return ingresses === 0;
-    case "X":
-      return true;
-    default:
-      return false;
-  }
+interface PassInfo {
+  id: number;
+  used: boolean;
+}
+
+function getTodayRange(): { today: Date; tomorrow: Date } {
+  const today = new Date();
+  const tomorrow = today;
+  today.setHours(17, 0, 0, 0);
+  tomorrow.setHours(10, 0, 0, 0);
+  tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+  return {
+    today,
+    tomorrow,
+  };
 }
 
 class ActivityDb {
-  async canAccess(credential: Credential): Promise<boolean> {
-    if ((await this.countPasses(credential)) > 0) {
+  async hasLeftGates(
+    user: User,
+    gates: Gate[],
+    today?: boolean,
+  ): Promise<boolean> {
+    let query = supabase.from("activity").select().eq("user", user.id);
+    for (const g of gates) {
+      query = query.or(`gate.eq.${g},and(movement.eq.EGRESS)`);
+    }
+    if (today != null && today) {
+      const { today, tomorrow } = getTodayRange();
+      query = query
+        .gte("created_at", today.toISOString())
+        .lt("created_at", tomorrow.toISOString());
+    }
+    const { data, error } = await query;
+    console.error(error);
+    if (data && data.length > 0) {
       return true;
-    }
-
-    let canAccess = true;
-    let now = new Date();
-    if (credential.valid_from) {
-      canAccess = canAccess && now > new Date(credential.valid_from);
-    }
-    if (credential.valid_to) {
-      canAccess = canAccess && now < new Date(credential.valid_to);
-    }
-    // Shortcircuit here to avoid going to the database if we already
-    // know the user can't access
-    if (!canAccess) {
+    } else {
       return false;
     }
-
-    const ingresses = await this.countIngress(credential);
-    return roleCanAccess(credential.role, ingresses);
   }
 
-  async canHavePass(credential: Credential): Promise<boolean> {
-    return (await this.countPasses(credential)) < 2;
+  async getPass(user: User): Promise<PassInfo | null> {
+    const { today, tomorrow } = getTodayRange();
+    const { data, error } = await supabase
+      .from("pass")
+      .select("id, used")
+      .eq("user", user.id)
+      .gte("created_at", today.toISOString())
+      .lt("created_at", tomorrow.toISOString())
+      .maybeSingle();
+    if (data) {
+      return {
+        id: data.id,
+        used: data.used,
+      };
+    } else {
+      return null;
+    }
   }
 
-  async registerIngress(
-    credential: Credential,
-    controller: Controller,
-  ): Promise<void> {
-    await this.registerMovement(credential, controller, "INGRESS");
+  async registerIngress(user: User, controller: Controller): Promise<void> {
+    await this.registerMovement(user, controller, "INGRESS");
   }
 
-  async registerEgress(
-    credential: Credential,
-    controller: Controller,
-  ): Promise<void> {
-    await this.registerMovement(credential, controller, "EGRESS");
+  async registerEgress(user: User, controller: Controller): Promise<void> {
+    await this.registerMovement(user, controller, "EGRESS");
   }
 
-  async grantPass(
-    credential: Credential,
-    controller: Controller,
-  ): Promise<void> {
-    await supabase.from("pass").insert({
-      user: credential.id,
-      granted_by: controller.id,
-      used: false,
-    });
-  }
-
-  private async countPasses(credential: Credential): Promise<number> {
-    //TODO: Handle error
-    const { count, error } = await supabase
-      .from("passes")
-      .select("*", { count: "exact" })
-      .eq("user", credential.id)
-      .eq("used", false)
-      .single();
-    return count || 0;
-  }
-
-  private async countIngress(credential: Credential): Promise<number> {
-    //TODO: Handle error
-    const { count, error } = await supabase
-      .from("activity")
-      .select("*", { count: "exact" })
-      .eq("user", credential.id)
-      .eq("movement", "INGRESS")
-      .single();
-    return count || 0;
+  async burnPass(id: number) {
+    await supabase
+      .from("pass")
+      .update({
+        used: true,
+      })
+      .eq("id", id);
   }
 
   private async registerMovement(
-    credential: Credential,
+    user: User,
     controller: Controller,
     movement: string,
   ): Promise<void> {
     await supabase.from("activity").insert({
-      user: credential.id,
+      user: user.id,
       controlled_by: controller.id,
       gate: controller.gate,
       movement: movement,
@@ -110,4 +97,4 @@ class ActivityDb {
 
 const activityDb = new ActivityDb();
 
-export { activityDb };
+export { activityDb, PassInfo };
