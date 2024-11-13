@@ -46,6 +46,7 @@ class Auth {
           token: userInfo.idToken,
         });
         if (error || !data.session) {
+          console.error(error)
           // TODO(fran): Handle this gracefully
           throw new SignInError(
             Reason.SUPABASE_AUTH_ERROR,

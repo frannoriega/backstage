@@ -32,8 +32,6 @@ class Credential {
   readonly email: string;
   readonly dni: number;
   readonly role: Role;
-  // Base64 representation of the photo
-  readonly photo: string;
   readonly valid_from?: string;
   readonly valid_to?: string;
 
@@ -44,7 +42,6 @@ class Credential {
     email: string,
     dni: number,
     role: Role,
-    photo: string,
     valid_from?: string,
     valid_to?: string,
   ) {
@@ -54,7 +51,6 @@ class Credential {
     this.email = email;
     this.dni = dni;
     this.role = role;
-    this.photo = photo;
     this.valid_from = valid_from;
     this.valid_to = valid_to;
   }
@@ -97,25 +93,23 @@ const credentialSchema = {
     role: {
       enum: [Role.A, Role.B, Role.C, Role.D, Role.E, Role.P, Role.X],
     },
-    photo: {
-      type: "string",
-    },
     valid_from: {
       type: "string",
       nullable: true,
     },
-    valid_end: {
+    valid_to: {
       type: "string",
       nullable: true,
     },
   },
-  required: ["id", "name", "lastname", "email", "dni", "role", "photo"],
+  required: ["id", "name", "lastname", "email", "dni", "role"],
 };
 
 class CredentialService {
   async decrypt(credentials: string): Promise<Credential> {
     const pk = await store.getPrivateKey();
     if (!pk) {
+      console.error("no pk")
       throw new CredentialError(
         Reason.PRIVATE_KEY_NOT_DEFINED,
         "Private key was not present in the store",
@@ -133,6 +127,7 @@ class CredentialService {
     const parsed = JSON.parse(decrypted.toString("utf8"));
     const isValid = ajv.validate(credentialSchema, parsed);
     if (!isValid) {
+      console.error('invalid')
       throw new CredentialError(
         Reason.INVALID_CREDENTIAL,
         "The credential is not valid",
@@ -158,8 +153,18 @@ class CredentialService {
     valid = valid && user.email === credential.email;
     valid = valid && user.dni === credential.dni;
     valid = valid && user.role.valueOf() === credential.role.valueOf();
-    valid = valid && user.valid_from === (credential.valid_from ?? null);
-    valid = valid && user.valid_to === (credential.valid_to ?? null);
+    if (credential.valid_from && user.valid_from) {
+      const credFrom = new Date(Date.parse(credential.valid_from))
+      const userFrom = new Date(Date.parse(user.valid_from))
+
+      valid = valid && userFrom.getTime() === credFrom.getTime();
+    }
+    if (credential.valid_to && user.valid_to) {
+      const credTo = new Date(Date.parse(credential.valid_to))
+      const userTo = new Date(Date.parse(user.valid_to))
+
+      valid = valid && userTo.getTime() === credTo.getTime();
+    }
     return valid;
   }
 }

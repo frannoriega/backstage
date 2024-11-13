@@ -17,7 +17,11 @@ export default function RootLayout() {
       />
       <Stack.Screen
         name="security/(tabs)"
-        options={{ title: "Seguridad", headerShown: false }}
+        options={{ title: "Seguridad", headerShown: false, contentStyle: style.all }}
+      />
+      <Stack.Screen
+        name="security/user"
+        options={{ title: "Credencial", headerShown: true, contentStyle: style.all }}
       />
     </Stack>
   );

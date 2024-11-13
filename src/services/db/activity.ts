@@ -1,15 +1,10 @@
 import { supabase } from "@/utils/supabase";
 import { Controller, Gate } from "@/services/db/controllers";
-import { Role, User } from "./users";
-
-interface PassInfo {
-  id: number;
-  used: boolean;
-}
+import { Role, State, User } from "./users";
 
 function getTodayRange(): { today: Date; tomorrow: Date } {
   const today = new Date();
-  const tomorrow = today;
+  const tomorrow = new Date(today.getTime());
   today.setHours(17, 0, 0, 0);
   tomorrow.setHours(10, 0, 0, 0);
   tomorrow.setUTCDate(today.getUTCDate() + 1);
@@ -26,10 +21,10 @@ class ActivityDb {
     gates: Gate[],
     today?: boolean,
   ): Promise<boolean> {
-    let query = supabase.from("activity").select().eq("user", user.id);
-    for (const g of gates) {
-      query = query.or(`gate.eq.${g},and(movement.eq.EGRESS)`);
-    }
+    let query = supabase.from("activity")
+      .select()
+      .eq("user", user.id)
+      .or(gates.map(g => `and(gate.eq.${g.valueOf()},movement.eq.EGRESS)`).join(','))
     if (today != null && today) {
       const { today, tomorrow } = getTodayRange();
       query = query
@@ -37,7 +32,9 @@ class ActivityDb {
         .lt("created_at", tomorrow.toISOString());
     }
     const { data, error } = await query;
-    console.error(error);
+    if (error) {
+      console.error(error);
+    }
     if (data && data.length > 0) {
       return true;
     } else {
@@ -45,56 +42,53 @@ class ActivityDb {
     }
   }
 
-  async getPass(user: User): Promise<PassInfo | null> {
+  async getPass(user: User): Promise<number | null> {
     const { today, tomorrow } = getTodayRange();
     const { data, error } = await supabase
       .from("pass")
-      .select("id, used")
+      .select("id")
       .eq("user", user.id)
       .gte("created_at", today.toISOString())
       .lt("created_at", tomorrow.toISOString())
       .maybeSingle();
     if (data) {
-      return {
-        id: data.id,
-        used: data.used,
-      };
+      return data.id;
     } else {
       return null;
     }
   }
 
-  async registerIngress(user: User, controller: Controller): Promise<void> {
-    await this.registerMovement(user, controller, "INGRESS");
-  }
-
-  async registerEgress(user: User, controller: Controller): Promise<void> {
-    await this.registerMovement(user, controller, "EGRESS");
-  }
-
-  async burnPass(id: number) {
+  async grantPass(id: number, controller: Controller) {
     await supabase
       .from("pass")
-      .update({
-        used: true,
+      .insert({
+        user: id,
+        granted_by: controller.id,
+        gate: controller.gate
       })
       .eq("id", id);
   }
 
-  private async registerMovement(
+  async registerMovement(
     user: User,
     controller: Controller,
-    movement: string,
+    movement: 'ingress' | 'egress',
+    newState: State
   ): Promise<void> {
-    await supabase.from("activity").insert({
-      user: user.id,
-      controlled_by: controller.id,
-      gate: controller.gate,
-      movement: movement,
-    });
+    const { error } = await supabase.rpc('register_movement', {
+      user_id: user.id,
+      controller_id: controller.id,
+      gate: controller.gate.valueOf(),
+      move: movement.toUpperCase(),
+      new_state: newState.valueOf()
+    })
+    if (error) {
+      console.error(error)
+    }
   }
+
 }
 
 const activityDb = new ActivityDb();
 
-export { activityDb, PassInfo };
+export { activityDb };

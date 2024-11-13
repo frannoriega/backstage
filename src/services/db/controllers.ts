@@ -5,6 +5,7 @@ enum Gate {
   S1 = "S1",
   S2 = "S2",
   S3 = "S3",
+  NONE = "NONE"
 }
 
 interface Controller {
@@ -13,7 +14,7 @@ interface Controller {
   lastname: string;
   email: string;
   dni: number;
-  gate?: Gate;
+  gate: Gate;
 }
 
 class ControllerDb {
@@ -33,6 +34,7 @@ class ControllerDb {
         gate: data.gate,
       };
     } else if (error) {
+      console.error(error)
       throw new DbError(DbErrorReason.UNKNOWN, "An error has occurred", error);
     } else {
       throw new DbError(DbErrorReason.UNKNOWN, "An error has occurred");

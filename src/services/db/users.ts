@@ -26,6 +26,7 @@ interface User {
   dni: number;
   role: Role;
   state: State;
+  photo: string;
   valid_from?: string;
   valid_to?: string;
 }
@@ -40,6 +41,13 @@ class UserDb {
       )
       .eq("id", id)
       .single();
+    const { data: photoUrl, error: photoError } = await supabase.storage.from('photos')
+      .createSignedUrl(`${id}/photo.jpg`, 3600)
+    if (!photoUrl || photoError) {
+      //TODO: Handle this error
+      console.error("no photo", photoError)
+      throw new Error()
+    }
     if (data) {
       return {
         id: data.id,
@@ -49,6 +57,7 @@ class UserDb {
         dni: data.dni,
         role: data.role,
         state: data.state,
+        photo: photoUrl?.signedUrl,
         valid_from: data.valid_from,
         valid_to: data.valid_to,
       };
@@ -57,6 +66,14 @@ class UserDb {
     } else {
       return null;
     }
+  }
+
+  async setState(id: number, state: State) {
+    const { error } = await supabase.from('users')
+      .update({
+        state: state
+      })
+      .eq('id', id)
   }
 }
 

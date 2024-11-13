@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet, Button, ActivityIndicator } from "react-native";
 import { Camera } from "expo-camera";
 import { router, useFocusEffect } from "expo-router";
 import { store } from "@/services/storage";
 import { credentialService, Credential } from "@/services/credentials";
+import { Ban } from "lucide-react-native";
 
 export default function Security() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -32,7 +33,7 @@ export default function Security() {
     //({ data }: { type: any; data: string }) {
     setScanned(true);
     try {
-      const data = `QoRkHbE4zOhBXgGPvd8/B2upkf0g56fN71Z9dHVM2acZufe3zXx1o/+1IPUkoBcvMeEPfLxJhz/MQDGfLs30HNOPtiP+rxYgjhz8kUCe4qP/+ZMe1s+WFUilBWTi6yWbwUxCZ/9p093Xp/JkdKSmmS1EHt0Px6eD/1xxPBIe3fSBqMf1BcoDPcizsibxTLfXYAbfkNP9h6KMXk9pZsyL07l3tFop8MKij6XZYxHbDvJKgvL49T8WHZNvel1pRWSX4cqykyyedjo6gu1aHTNiVkq5VsrLmh9oTJsKNxb70wHMsyYzT3LrrGXCskgSiyFFdoLi2bn2riEDmkON1INivyjfYo3FjfNjkW8BKmyyRKXCmFec+138EKDpMINmncOFmerT37DYYaS+Yji1cUFeUhNDZN6caf2DN59dxq03GkLh2bSa/jjo8dEeSKd3eGtXg+e3DZCSQzzjLAvFkcb6DTbHcoMtLYcT3gcJGzwhxcP4o4HlpkjX2/alZWrfWxo5AptkORIqOxZKcPkVNlC4DSmWezBLoRIUgbrbVknBv7ATNxMYABzCWTUXEJRpsGnB2ZZNsm11Iu6sMgdBFTBkca+5gV20NVhee2ALhZ/pXf/CAAulAKDc1YTJ+KQGn0+5p3E0vTWTB2dsCTV39ZGnDXQ+ayXpXJ2We5w4PZwVk/c=`;
+      const data = `cJIcfHQ5ip88SiGM4IHCH3vEy+TQUMSny/vbUp4pvrD0CvQrJgzYIWZ7YPogLuo7YWxyrvaSlMZy+3azUcWFuBTBaR1QMmU642GgDuUOLtIrF0xt2Gd0PA+UHfiyOUJOaO+yiPaBrTtxvGVkXj3b/R0vDj0pzh4rxrL0HFS6817587Ru/PyC9lrALSjWtmt4z8ImY5Shl96sGIdtBNpYpg7QaTm8rEcxABg2nCy9ZAvhrqZmY6nyhKspPxeRkN7H6VQrvj/N8qL9ZSPvQLPZ0yT2GF0wubSHTBeMbW+4MVNOBI83UbR9i+1eJfDMMQS44t6d/nGScYtVsBOFMJlWkVimb5Ky9I1/xUvwCL9+vdXYh4EJWWBybHvr99ES1C2dGuIP1NW3B1Caz48cxvjWT4Ui917RssMpM9aZhIG74pt4yROcxXYv4DcjDhes256d07HrhzeoJSXjc6KftPZaTTggmeC/gJ/V+fvDtdXzkJSF4BX5Jft8QLasAc8tbxyJpJ4aP9k9qMm4LNUfb7XK2zNwi46IhcOSBBkc5jERuDTrvi3d6KspUoVYOuS0oq8ZInQYOGMSNCXHnOKRK8KE4as1txe8pVPqPQSLS+FHk9flPO15fuJXncyIsoqFY3gFKPfInPfOioejXv0Udmrn/mOO1WjC2opoYGVVIvidsoI=`;
       const credential = await credentialService.decrypt(data);
       const controller = await store.getController();
       if (controller) {
@@ -47,15 +48,22 @@ export default function Security() {
         router.push("/");
       }
     } catch (error) {
-      //TODO: Handle error
+      router.push("/security/invalid")
     }
   }
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return <ActivityIndicator size="large" />
   }
+
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return (
+      <View className="flex-1 justify-center items-center gap-8">
+        <Ban size={64} color={'white'}/>
+        <Text className="text-2xl text-white">No hay acceso a la cámara</Text>
+        <Text className="w-min text-xl text-white text-center">Otorgue permisos a la aplicación para poder escanear</Text>
+      </View>
+    )
   }
 
   // <CameraView

@@ -1,12 +1,9 @@
 import { supabase } from "@/utils/supabase";
 import { router, Slot } from "expo-router";
-import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
-import base64 from "react-native-base64";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Activity, LogOut, QrCode } from "lucide-react-native";
 import { cssInterop } from "nativewind";
-import { store } from "@/services/storage";
 import { auth } from "@/services/auth";
 
 cssInterop(QrCode, { className: "style" });
@@ -18,22 +15,6 @@ export default function SecurityLayout() {
     await auth.signOut();
     router.replace("/");
   }
-
-  useEffect(() => {
-    const getKey = async () => {
-      const session = await store.getSession();
-      if (session) {
-        const pk = await supabase.functions.invoke("getPk", {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-        store.setPrivateKey(base64.decode(pk.data));
-      }
-    };
-
-    getKey();
-  }, []);
 
   return (
     <SafeAreaView className="flex-1">
