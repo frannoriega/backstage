@@ -37,7 +37,7 @@ export default function Index() {
         store.setPrivateKey(base64.decode(pk.data));
       }
 
-      router.push("/security/(tabs)");
+      router.push("/security");
     } catch (error: any) {
       if (error instanceof SignInError) {
         switch (error.reason) {
