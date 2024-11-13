@@ -31,7 +31,28 @@ interface User {
   valid_to?: string;
 }
 
+interface UserId {
+  id: number,
+  name: string,
+  lastname: string
+}
+
 class UserDb {
+  async getUsers(): Promise<UserId[]> {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, name, lastname")
+    if (error) {
+      console.error("getUsers: ", error)
+    }
+    if (data) {
+      return data
+    } else {
+      //TODO: Handle this error
+      throw new Error()
+    }
+  }
+
   async getUser(id: number): Promise<User | null> {
     //TODO: Remove roles or move them inside users
     const { data, error } = await supabase
@@ -79,4 +100,4 @@ class UserDb {
 
 const userDb = new UserDb();
 
-export { userDb, User, Role, State };
+export { userDb, User, UserId, Role, State };
