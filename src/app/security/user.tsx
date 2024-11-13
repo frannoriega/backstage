@@ -64,7 +64,9 @@ export default function ScannedUserPage() {
 
   if (loading) {
     return (
-      <ActivityIndicator size="large" />
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
     )
   }
 
