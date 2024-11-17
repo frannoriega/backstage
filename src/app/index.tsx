@@ -27,16 +27,6 @@ export default function Index() {
   const signIn = async () => {
     try {
       await auth.signIn();
-      const session = await store.getSession();
-      if (session) {
-        const pk = await supabase.functions.invoke("getPk", {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-        store.setPrivateKey(base64.decode(pk.data));
-      }
-
       router.push("/security");
     } catch (error: any) {
       if (error instanceof SignInError) {
