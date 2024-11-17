@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 export default function Invalid() {
   return (
     <View>
-      <Text>Usuario inválido</Text>
+      <Text className="text-white">Usuario inválido</Text>
     </View>
   );
 }

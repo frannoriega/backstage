@@ -25,11 +25,13 @@ export default function Activity() {
     )
   }
 
-  function goToUser(id: number) {
+  function goToUser(user: UserId) {
     router.push({
-      pathname: "/security/activity/[user]",
+      pathname: "/activity/[user]",
       params: {
-        user: id
+        user: user.id,
+        name: user.name,
+        lastname: user.lastname
       }
     })
   }
@@ -37,8 +39,8 @@ export default function Activity() {
   return (
     <View className="flex-1">
       {users.map(u => (
-        <Pressable key={u.id} className="p-4" onPress={() => goToUser(u.id)}>
-          <Text className="text-white">{u.name} {u.lastname}</Text>
+        <Pressable key={u.id} className="p-4" onPress={() => goToUser(u)}>
+          <Text className="text-white text-xl">{u.name} {u.lastname}</Text>
         </Pressable>
       ))}
     </View>

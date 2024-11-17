@@ -16,6 +16,14 @@ export default function RootLayout() {
         }}
       />
       <Stack.Screen
+        name="credential"
+        options={{ title: "Credencial", headerShown: true, headerStyle: style.header, headerTitleStyle: style.header, headerTintColor: 'white', contentStyle: style.all }}
+      />
+      <Stack.Screen
+        name="activity/[user]"
+        options={{ title: "Credencial", headerShown: true, headerStyle: style.header, headerTitleStyle: style.header, headerTintColor: 'white', contentStyle: style.all }}
+      />
+      <Stack.Screen
         name="security"
         options={{ title: "Seguridad", headerShown: false, contentStyle: style.all }}
       />
@@ -30,5 +38,8 @@ const style = StyleSheet.create({
   header: {
     backgroundColor: "black",
     color: "white",
+    tintColor: "white",
+    textDecorationColor: "white",
+    borderColor: "white",
   },
 });

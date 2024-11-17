@@ -1,11 +1,26 @@
 import crypto from "crypto";
-import { store } from "./storage";
 import Ajv from "ajv";
 import base64 from "react-native-base64";
 import { Buffer } from "buffer";
 import { Role, User } from "./db/users";
 
 const ajv = new Ajv();
+
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAzpeRei7hdRMg05xEr2NI
+hRSwKcnjdM9/sxpdnGBd3Hkz0lkJrOMcIQXr3Zo2+HJGGGnNLYzKb+KJ758Qg1Ge
++8qkdhVpMFOILDIJLIIquLoHCjTfPTkhmLEwLtd1yKlQMupD/66LdAMEEr0tKk7n
+SD+uJO4Lbf7Hxp2hkyA/BhXQQswTHM80x3WpFkUIrmG7sm4WSzb9yF0tuOv670Aq
+Hqc1VqMXW/uEwtAI6NHWGS3zX2mjLcwScoyo8V2SEDtzoVhg6aTdHPUTGXgNloxI
+w4VQXg4ablAGqCJrSeiX8aor+PhUIvOU8bIQFx5QTZoL5jtFXE3JkVJ7LMQo1lJP
+SwB5FN8fnOEiAddZekDYk81dzRAB0zDfz9Gv+JC35o4FN+Ak5gIeiJfx9X/osI8P
+7niI8BzflbvajbUQ+D0UmB0spqy083ESNEMfiO01Qr9m2PAzS7hpNVz9o2pBCwY6
+aJEGGsEdo/Pfa2ztqu1ocKeLZf51UNwGIFPgCFyEEmepbwzpZMBBroPCSm5Ip9mZ
+at9PfPomySk9RdlQ4UZ8iswsD0FFJOYcls2QTghaRCr/6LeCdH/G/V/yucURHaV4
+oIcuKkCCGPp0d0/AP8+QzxVKLSpSb1dp0XuqhoL3oL5158aWJHrUOeA5LDH8RKRA
+6GJuW+YZy1uPAP5hsqjayTECAwEAAQ==
+-----END PUBLIC KEY-----` 
+const SHA256_ASN1_PREFIX = Buffer.from("3031300d060960864801650304020105000420", "hex");
 
 enum Reason {
   PRIVATE_KEY_NOT_DEFINED,
@@ -106,26 +121,27 @@ const credentialSchema = {
 };
 
 class CredentialService {
-  async decrypt(credentials: string): Promise<Credential> {
-    const pk = await store.getPrivateKey();
-    if (!pk) {
-      console.error("no pk")
-      throw new CredentialError(
-        Reason.PRIVATE_KEY_NOT_DEFINED,
-        "Private key was not present in the store",
-      );
-    }
-    const decrypted = crypto.privateDecrypt(
+  async decrypt(credentials: { signature: string, data: any }): Promise<Credential> {
+    const decrypted = crypto.publicDecrypt(
       {
-        key: pk,
-        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: "sha256",
+        key: PUBLIC_KEY,
+        padding: crypto.constants.RSA_PKCS1_PADDING,
       },
       // openssl pkeyutl -encrypt -inkey keyfile.pub -pubin -in user.json -out encrypted.bin -keyform PEM -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
-      Buffer.from(credentials, "base64"),
+      Buffer.from(credentials.signature, "base64"),
     );
-    const parsed = JSON.parse(decrypted.toString("utf8"));
-    const isValid = ajv.validate(credentialSchema, parsed);
+
+    // Check if the decrypted signature starts with the SHA-256 prefix
+    if (!decrypted.subarray(0, SHA256_ASN1_PREFIX.length).equals(SHA256_ASN1_PREFIX)) {
+      throw new Error("Invalid signature format or hash algorithm mismatch");
+    }
+
+    // Extract the actual hash
+    const decryptedHash = decrypted.subarray(SHA256_ASN1_PREFIX.length);
+    const dataHash = crypto.createHash('sha256')
+      .update(JSON.stringify(credentials.data))
+      .digest('hex')
+    const isValid = decryptedHash.toString('hex') === dataHash
     if (!isValid) {
       console.error('invalid')
       throw new CredentialError(
@@ -133,17 +149,7 @@ class CredentialService {
         "The credential is not valid",
       );
     }
-    return new Credential(
-      parsed.id,
-      parsed.name,
-      parsed.lastname,
-      parsed.email,
-      parsed.dni,
-      parsed.role,
-      parsed.photo,
-      parsed.valid_from,
-      parsed.valid_to,
-    );
+    return credentials.data
   }
 
   validate(user: User, credential: Credential): boolean {

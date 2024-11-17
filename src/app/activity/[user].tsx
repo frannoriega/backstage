@@ -1,10 +1,14 @@
 import { User, userDb } from "@/services/db/users";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 
 export default function UserScreen() {
-  const { user: id } = useLocalSearchParams();
+  const { user: id, name, lastname } = useLocalSearchParams();
+  const navigator = useNavigation();
+  navigator.setOptions({
+    title: `${name} ${lastname}`
+  })
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null);
 
