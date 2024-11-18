@@ -44,7 +44,7 @@ export default function ScannedUserPage() {
           setRoleClassName('bg-lime-400')
           break
         case Role.D:
-          setRoleClassName('bg-purle-400')
+          setRoleClassName('bg-purple-400')
           break
         case Role.E:
           setRoleClassName('bg-rose-400')
