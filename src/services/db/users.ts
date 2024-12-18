@@ -15,6 +15,7 @@ enum State {
   OUTSIDE = "outside",
   CHECKPOINT = "checkpoint",
   BACKSTAGE = "backstage",
+  BAND = "band",
   FIELD = "field",
 }
 
@@ -25,10 +26,13 @@ interface User {
   email: string;
   dni: number;
   role: Role;
-  state: State;
-  photo: string;
-  valid_from?: string;
-  valid_to?: string;
+  photo_url: string;
+  phone: string;
+  group: string | null;
+  valid_from?: Date;
+  valid_to?: Date;
+  enabled: boolean;
+  state: UserState;
 }
 
 interface UserId {
@@ -37,67 +41,76 @@ interface UserId {
   lastname: string
 }
 
+interface UserState {
+  state: State;
+  s1_pass: Pass;
+  s2_pass: Pass;
+  updated_at: Date;
+}
+
+enum Pass {
+  NONE,
+  IN_PROGRESS,
+  USED
+}
+
 class UserDb {
   async getUsers(): Promise<UserId[]> {
     const { data, error } = await supabase
       .from("users")
       .select("id, name, lastname")
-    if (error) {
-      console.error("getUsers: ", error)
-    }
-    if (data) {
-      return data
-    } else {
+    if (error || !data) {
       //TODO: Handle this error
+      console.error("getUsers: ", error)
       throw new Error()
     }
+    return data
   }
 
   async getUser(id: number): Promise<User | null> {
-    //TODO: Remove roles or move them inside users
     const { data, error } = await supabase
       .from("users")
-      .select(
-        "id, name, lastname, email, dni, role, state, valid_from, valid_to",
-      )
+      .select("*, groups(name), user_state(*)")
       .eq("id", id)
       .single();
+    console.log("getUser: ", data)
+    if (error) {
+      console.error("getUser: ", error)
+      throw new DbError(DbErrorReason.UNKNOWN, "An error has occurred", error);
+    }
+    if (!data) {
+      return null
+    }
     const { data: photoUrl, error: photoError } = await supabase.storage.from('photos')
-      .createSignedUrl(`${id}/photo.jpg`, 3600)
+      .createSignedUrl(data.photo_url, 3600)
     if (!photoUrl || photoError) {
       //TODO: Handle this error
       console.error("no photo", photoError)
       throw new Error()
     }
-    if (data) {
-      return {
-        id: data.id,
-        name: data.name,
-        lastname: data.lastname,
-        email: data.email,
-        dni: data.dni,
-        role: data.role,
-        state: data.state,
-        photo: photoUrl?.signedUrl,
-        valid_from: data.valid_from,
-        valid_to: data.valid_to,
-      };
-    } else if (error) {
-      throw new DbError(DbErrorReason.UNKNOWN, "An error has occurred", error);
-    } else {
-      return null;
-    }
-  }
-
-  async setState(id: number, state: State) {
-    const { error } = await supabase.from('users')
-      .update({
-        state: state
-      })
-      .eq('id', id)
+    return {
+      id: data.id,
+      name: data.name,
+      lastname: data.lastname,
+      email: data.email,
+      dni: data.dni,
+      phone: data.phone,
+      role: data.role,
+      photo_url: photoUrl?.signedUrl,
+      group: data.groups?.name,
+      valid_from: new Date(data.valid_from),
+      valid_to: new Date(data.valid_to),
+      enabled: data.enabled,
+      state: {
+        state: data.user_state.state,
+        s1_pass: data.user_state.s1_pass,
+        s2_pass: data.user_state.s2_pass,
+        updated_at: new Date(data.user_state.updated_at)
+      }
+    };
   }
 }
 
 const userDb = new UserDb();
 
-export { userDb, User, UserId, Role, State };
+export { userDb, User, UserId, UserState, Pass, Role, State };

@@ -5,7 +5,7 @@ enum Gate {
   S1 = "S1",
   S2 = "S2",
   S3 = "S3",
-  NONE = "NONE"
+  S4 = "S4",
 }
 
 interface Controller {
