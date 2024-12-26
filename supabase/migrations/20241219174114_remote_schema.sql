@@ -85,6 +85,16 @@ CREATE TYPE "public"."movement" AS ENUM (
 ALTER TYPE "public"."movement" OWNER TO "postgres";
 
 
+CREATE TYPE "public"."pass" AS ENUM (
+    'NONE',
+    'IN_PROGRESS',
+    'USED'
+);
+
+
+ALTER TYPE "public"."pass" OWNER TO "postgres";
+
+
 CREATE TYPE "public"."role" AS ENUM (
     'A',
     'B',
@@ -209,9 +219,7 @@ CREATE TABLE IF NOT EXISTS "public"."user_state" (
     "id" bigint NOT NULL,
     "user" bigint NOT NULL,
     "state" "public"."state" NOT NULL,
-    "s1_pass" boolean DEFAULT false NOT NULL,
-    "updated_at" timestamp with time zone NOT NULL,
-    "s2_pass" boolean DEFAULT false NOT NULL
+    "updated_at" timestamp with time zone NOT NULL
 );
 
 

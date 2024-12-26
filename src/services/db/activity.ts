@@ -1,6 +1,6 @@
 import { supabase } from "@/utils/supabase";
 import { Controller, Gate } from "@/services/db/controllers";
-import { Role, State, User } from "./users";
+import { Role, State, User, UserState } from "./users";
 
 function getTodayRange(): { today: Date; tomorrow: Date } {
   const today = new Date();
@@ -73,14 +73,19 @@ class ActivityDb {
     user: User,
     controller: Controller,
     movement: 'ingress' | 'egress',
-    newState: State
+    newState: UserState
   ): Promise<void> {
+    console.log(newState)
+    console.log(user.id)
     const { error } = await supabase.rpc('register_movement', {
       user_id: user.id,
       controller_id: controller.id,
-      gate: controller.gate.valueOf(),
+      g: controller.gate.valueOf(),
       move: movement.toUpperCase(),
-      new_state: newState.valueOf()
+      new_state: newState.state.valueOf(),
+      new_s1_pass: newState.s1_pass.valueOf(),
+      new_s2_pass: newState.s2_pass.valueOf(),
+      new_updated_at: newState.updated_at.toISOString()
     })
     if (error) {
       console.error(error)

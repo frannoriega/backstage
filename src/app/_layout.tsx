@@ -33,7 +33,7 @@ export default function RootLayout() {
 
 const style = StyleSheet.create({
   all: {
-    backgroundColor: "black",
+    backgroundColor: "#f8fafc",
   },
   header: {
     backgroundColor: "black",

@@ -1,21 +1,44 @@
-import { UserId, userDb } from "@/services/db/users";
+import { Role, UserId, userDb } from "@/services/db/users";
+import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import { router } from "expo-router";
+import { ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, Pressable } from "react-native";
+import { View, Text, ActivityIndicator, Pressable, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { RollInLeft } from "react-native-reanimated";
+import SearchBar from "@/components/searchbar";
 
 export default function Activity() {
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState<UserId[]>([])
+  const [page, setPage] = useState(0)
+  const [next, setNext] = useState(false)
+  const [prev, setPrev] = useState(false)
+  const [filterInput, setFilterInput] = useState<Role[]>([])
+  const [searchInput, setSearchInput] = useState("")
 
   useEffect(() => {
     const init = async () => {
-      const users = await userDb.getUsers()
-      setUsers(users)
+      console.log(page)
+      const users = await userDb.getUsers(page, filterInput, searchInput).catch(e => {
+        return {
+          data: [],
+          next: false,
+          prev: false
+        }
+      })
+      let mock = []
+      for (let i = 0; i < 1300; i++) {
+        mock.push({ id: i, name: `name ${i}`, lastname: `lastname ${i}`, dni: i, role: Role.A })
+      }
+      setUsers(users.data)
+      setNext(users.next)
+      setPrev(users.prev)
       setLoading(false)
     }
-    
+
     init()
-  }, [])
+  }, [filterInput, searchInput, page])
 
   if (loading) {
     return (
@@ -36,13 +59,73 @@ export default function Activity() {
     })
   }
 
+  function search(text: string) {
+    setSearchInput(text)
+  }
+
+  function filter(roles: Role[]) {
+    setFilterInput(roles)
+  }
+
   return (
-    <View className="flex-1">
-      {users.map(u => (
-        <Pressable key={u.id} className="p-4" onPress={() => goToUser(u)}>
-          <Text className="text-white text-xl">{u.name} {u.lastname}</Text>
+    <SafeAreaView className="flex-1 flex-col items-center">
+      <View className="w-full">
+        <SearchBar onSearch={search} onFilter={filter}/>
+      </View>
+      <FlatList
+        data={users}
+        renderItem={({ item }) => (
+          <Pressable key={item.dni} className="w-full p-4 border-gray-200 border flex flex-row items-center justify-between" onPress={() => goToUser(item)}>
+            <View className="flex flex-col justify-between">
+              <Text>{item.name} {item.lastname}</Text>
+              <Text className="text-gray-500">DNI: {item.dni}</Text>
+            </View>
+            <ChevronRight size={24} color="#6b7280" />
+          </Pressable>
+        )}
+      />
+      <View className="flex flex-row items-center py-4">
+        {        <Pressable onPress={() => setPage(p => p - 1)}>
+          <ChevronLeft size={34} color='black' />
         </Pressable>
-      ))}
-    </View>
+        }
+        <Text className="p-4 bg-blue-200 rounded-xl">{page}</Text>
+        {        <Pressable onPress={() => setPage(p => p + 1)}>
+          <ChevronRight size={34} color='black' />
+        </Pressable>
+        }
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { padding: 16 },
+  dropdown: {
+    height: 50,
+    backgroundColor: 'transparent',
+    borderBottomColor: 'gray',
+    borderBottomWidth: 0.5,
+    padding: 16,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  icon: {
+    marginRight: 5,
+  },
+  selectedStyle: {
+    borderRadius: 999999,
+  },
+});

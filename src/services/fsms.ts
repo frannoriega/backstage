@@ -36,7 +36,9 @@ export abstract class RoleFsm {
     if (!this.user.enabled) {
       return denied
     }
-    return this.getAccess(gate)
+    const info = this.getAccess(gate)
+    console.log("canAccess: ", info)
+    return info
   }
 
   protected abstract getAccess(gate: Gate): AccessInfo
@@ -62,9 +64,12 @@ export class RoleXFsm extends RoleFsm {
   }
 
   getAccess(gate: Gate): AccessInfo {
+    console.log("getAccess: ", gate)
+    console.log("getAccess (user): ", this.user)
     switch (this.user.state.state) {
       case State.OUTSIDE:
         if (gate === Gate.S1) {
+          console.log("gate 1")
           return {
             movement: 'ingress',
             pass: false,
@@ -76,6 +81,7 @@ export class RoleXFsm extends RoleFsm {
             }
           }
         } else {
+          console.log("denied: ", denied)
           return denied
         }
       case State.CHECKPOINT:

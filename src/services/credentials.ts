@@ -133,6 +133,7 @@ class CredentialService {
 
     // Check if the decrypted signature starts with the SHA-256 prefix
     if (!decrypted.subarray(0, SHA256_ASN1_PREFIX.length).equals(SHA256_ASN1_PREFIX)) {
+      console.error("Invalid signature")
       throw new Error("Invalid signature format or hash algorithm mismatch");
     }
 

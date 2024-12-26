@@ -32,8 +32,79 @@ class FsmTester {
   }
 }
 
+describe("The Role X FSM", () => {
+  test("doesn't work on disabled users", () => {
+    const user: User = {
+      id: 1,
+      name: 'Test',
+      lastname: 'Test',
+      dni: 1111111,
+      role: Role.X,
+      email: 'email@example.com',
+      phone: '123456',
+      enabled: false,
+      group: 'group',
+      photo_url: 'photo',
+      state: {
+        state: State.OUTSIDE,
+        updated_at: new Date(),
+        s1_pass: Pass.NONE, s2_pass: Pass.NONE
+      }
+    }
 
-describe("The Role A/X FSM", () => {
+    new FsmTester(user)
+      .useGate(Gate.S1, { movement: 'denied', pass: false })
+      .useGate(Gate.S2, { movement: 'denied', pass: false })
+      .useGate(Gate.S3, { movement: 'denied', pass: false })
+      .useGate(Gate.S4, { movement: 'denied', pass: false })
+      .validate()
+
+  })
+
+  test("works on complex scenarios", () => {
+    const user: User = {
+      id: 1,
+      name: 'Test',
+      lastname: 'Test',
+      dni: 1111111,
+      role: Role.X,
+      email: 'email@example.com',
+      phone: '123456',
+      enabled: true,
+      group: 'group',
+      photo_url: 'photo',
+      state: {
+        state: State.OUTSIDE,
+        updated_at: new Date(),
+        s1_pass: Pass.NONE, s2_pass: Pass.NONE
+      }
+    }
+
+    new FsmTester(user)
+      .useGate(Gate.S2, { movement: 'denied', pass: false })
+      .useGate(Gate.S3, { movement: 'denied', pass: false })
+      .useGate(Gate.S4, { movement: 'denied', pass: false })
+      .useGate(Gate.S1, { movement: 'ingress', pass: false, state: { state: State.CHECKPOINT, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S1, { movement: 'egress', pass: false, state: { state: State.OUTSIDE, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S4, { movement: 'denied', pass: false })
+      .useGate(Gate.S1, { movement: 'ingress', pass: false, state: { state: State.CHECKPOINT, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S2, { movement: 'egress', pass: false, state: { state: State.FIELD, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S2, { movement: 'ingress', pass: false, state: { state: State.CHECKPOINT, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S3, { movement: 'ingress', pass: false, state: { state: State.BAND, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S4, { movement: 'ingress', pass: false, state: { state: State.BACKSTAGE, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S1, { movement: 'denied', pass: false })
+      .useGate(Gate.S2, { movement: 'denied', pass: false })
+      .useGate(Gate.S3, { movement: 'denied', pass: false })
+      .useGate(Gate.S4, { movement: 'egress', pass: false, state: { state: State.BAND, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S3, { movement: 'egress', pass: false, state: { state: State.CHECKPOINT, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S2, { movement: 'egress', pass: false, state: { state: State.FIELD, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S2, { movement: 'ingress', pass: false, state: { state: State.CHECKPOINT, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .useGate(Gate.S1, { movement: 'egress', pass: false, state: { state: State.OUTSIDE, updated_at: new Date(), s1_pass: Pass.NONE, s2_pass: Pass.NONE } })
+      .validate()
+  })
+})
+
+describe("The Role A FSM", () => {
   test("doesn't work on disabled users", () => {
     const user: User = {
       id: 1,
@@ -219,7 +290,7 @@ describe("The Role B FSM", () => {
       .useGate(Gate.S2, { movement: 'denied', pass: false })
       .useGate(Gate.S3, { movement: 'denied', pass: false })
       .useGate(Gate.S4, { movement: 'denied', pass: false })
-    .validate()
+      .validate()
   })
 
   test("allows valid timeframes", () => {

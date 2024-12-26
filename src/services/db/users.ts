@@ -12,11 +12,11 @@ enum Role {
 }
 
 enum State {
-  OUTSIDE = "outside",
-  CHECKPOINT = "checkpoint",
-  BACKSTAGE = "backstage",
-  BAND = "band",
-  FIELD = "field",
+  OUTSIDE = "OUTSIDE",
+  CHECKPOINT = "SECURITY",
+  BACKSTAGE = "BACKSTAGE",
+  BAND = "BAND",
+  FIELD = "FIELD",
 }
 
 interface User {
@@ -38,7 +38,9 @@ interface User {
 interface UserId {
   id: number,
   name: string,
-  lastname: string
+  lastname: string,
+  dni: number,
+  role: Role
 }
 
 interface UserState {
@@ -49,22 +51,36 @@ interface UserState {
 }
 
 enum Pass {
-  NONE,
-  IN_PROGRESS,
-  USED
+  NONE = "NONE",
+  IN_PROGRESS = "IN_PROGRESS",
+  USED = "USED"
 }
 
 class UserDb {
-  async getUsers(): Promise<UserId[]> {
-    const { data, error } = await supabase
+  private readonly PAGE_SIZE = 10
+
+  async getUsers(page: number, roles: Role[], search: string): Promise<{ data: UserId[], next: boolean, prev: boolean}> {
+    const offset = page * this.PAGE_SIZE
+    const r = roles.length == 0 ?
+      Object.values(Role) :
+      roles
+    const { data, error, count } = await supabase
       .from("users")
-      .select("id, name, lastname")
+      .select("id, name, lastname, dni, role", { count: 'exact', head: false })
+      .or(`name.ilike.%${search}%,lastname.ilike.%${search}%`)
+      .in("role", r)
+      .order("lastname", { ascending: true })
+      .range(offset, offset + this.PAGE_SIZE - 1)
     if (error || !data) {
       //TODO: Handle this error
       console.error("getUsers: ", error)
       throw new Error()
     }
-    return data
+    return {
+      data,
+      next: (offset + this.PAGE_SIZE - 1) < (count ?? 0),
+      prev: page > 0
+    }
   }
 
   async getUser(id: number): Promise<User | null> {
@@ -82,7 +98,7 @@ class UserDb {
       return null
     }
     const { data: photoUrl, error: photoError } = await supabase.storage.from('photos')
-      .createSignedUrl(data.photo_url, 3600)
+      .createSignedUrl(`${data.id}.jpg`, 3600)
     if (!photoUrl || photoError) {
       //TODO: Handle this error
       console.error("no photo", photoError)
