@@ -89,7 +89,7 @@ export default function Activity() {
           <ChevronLeft size={34} color='black' />
         </Pressable>
         }
-        <Text className="p-4 bg-blue-200 rounded-xl">{page}</Text>
+        <Text className="p-4 bg-blue-200 rounded-xl">{page + 1}</Text>
         {        <Pressable onPress={() => setPage(p => p + 1)}>
           <ChevronRight size={34} color='black' />
         </Pressable>

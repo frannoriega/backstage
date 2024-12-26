@@ -2,60 +2,41 @@ import { supabase } from "@/utils/supabase";
 import { Controller, Gate } from "@/services/db/controllers";
 import { Role, State, User, UserState } from "./users";
 
-function getTodayRange(): { today: Date; tomorrow: Date } {
-  const today = new Date();
-  const tomorrow = new Date(today.getTime());
-  today.setHours(17, 0, 0, 0);
-  tomorrow.setHours(10, 0, 0, 0);
-  tomorrow.setUTCDate(today.getUTCDate() + 1);
-
-  return {
-    today,
-    tomorrow,
-  };
+interface ActivityInfo {
+  controller: {
+    id: number,
+    name: string,
+    lastname: string
+  },
+  movement: 'INGRESS' | 'EGRESS',
+  gate: Gate,
+  created_at: string
 }
 
 class ActivityDb {
-  async hasLeftGates(
-    user: User,
-    gates: Gate[],
-    today?: boolean,
-  ): Promise<boolean> {
-    let query = supabase.from("activity")
-      .select()
-      .eq("user", user.id)
-      .or(gates.map(g => `and(gate.eq.${g.valueOf()},movement.eq.EGRESS)`).join(','))
-    if (today != null && today) {
-      const { today, tomorrow } = getTodayRange();
-      query = query
-        .gte("created_at", today.toISOString())
-        .lt("created_at", tomorrow.toISOString());
-    }
-    const { data, error } = await query;
-    if (error) {
-      console.error(error);
-    }
-    if (data && data.length > 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 
-  async getPass(user: User): Promise<number | null> {
-    const { today, tomorrow } = getTodayRange();
-    const { data, error } = await supabase
-      .from("pass")
-      .select("id")
-      .eq("user", user.id)
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString())
-      .maybeSingle();
-    if (data) {
-      return data.id;
-    } else {
-      return null;
+  async getActivity(id: number): Promise<ActivityInfo[]> {
+    const { data, error } = await supabase.from("activity")
+      .select("controller(id, name, lastname), movement, gate, created_at")
+      .eq("user", id)
+      .order("created_at", { ascending: false })
+      .limit(5)
+    if (error || !data) {
+      console.error("getActivity: ", error)
     }
+    console.log("getActivity: ", data)
+    return data.map(d => {
+      return {
+        controller: {
+          id: d.controller.id,
+          name: d.controller.name,
+          lastname: d.controller.lastname,
+        },
+        movement: d.movement,
+        gate: d.gate,
+        created_at: d.created_at
+      }
+    }) 
   }
 
   async grantPass(id: number, controller: Controller) {
@@ -96,4 +77,4 @@ class ActivityDb {
 
 const activityDb = new ActivityDb();
 
-export { activityDb };
+export { activityDb, ActivityInfo };
