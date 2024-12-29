@@ -23,9 +23,11 @@ export default function ScannedUserPage() {
     const init = async () => {
       const controller = await store.getController();
       const user = await userDb.getUser(credential.id);
+      console.log("user: ", user)
       if (controller && user) {
         const accessInfo = createFsm(user)
           .canAccess(controller.gate)
+        console.log("access info: ", accessInfo)
         setState({
           user,
           controller,
@@ -79,7 +81,7 @@ export default function ScannedUserPage() {
   if (state) {
     return (
       <View className="flex-1 justify-evenly items-center gap-8 py-24 px-8 w-full">
-        <View className="bg-white flex-2 items-center h-fit w-full gap-2 pt-8 border border-white rounded-xl overflow-hidden">
+        <View className="bg-white flex-2 items-center h-fit w-full gap-2 pt-8 border border-white rounded-xl overflow-hidden" style={{ elevation: 1 }}>
           {state.user &&
             <Image source={state.user.photo_url} className="h-80 w-80 rounded-xl border" />
           }

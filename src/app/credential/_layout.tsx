@@ -10,13 +10,12 @@ export default function RootLayout() {
         name="index"
         options={{
           title: "Credencial",
-          contentStyle: style.all,
           headerShown: false,
         }}
       />
       <Stack.Screen
         name="invalid"
-        options={{ title: "Credencial", headerShown: false, contentStyle: style.all }}
+        options={{ title: "Credencial", headerShown: false }}
       />
     </Stack>
   );

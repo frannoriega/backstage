@@ -4,17 +4,13 @@ import { useState } from 'react'
 import { Modal, Pressable, Text, View } from 'react-native'
 
 type FilterProps = {
-  onOpen: (open: boolean) => any
+  onOpen: () => any
 }
 
 export default function Filter({ onOpen }: FilterProps) {
-  const [open, setOpen] = useState(false)
   return (
     <View className='relative'>
-      <Pressable onPress={() => {
-        onOpen(!open)
-        setOpen(!open)
-      }}>
+      <Pressable onPress={onOpen}>
         <SlidersHorizontal size={20} color='black' />
       </Pressable>
     </View>

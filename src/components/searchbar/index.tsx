@@ -1,7 +1,7 @@
-import { Text, Modal, Pressable, TextInput, View } from "react-native";
+import { StyleSheet, Text, Modal, Pressable, TextInput, View, TouchableWithoutFeedback, TouchableOpacity, Platform, FlatList } from "react-native";
 import Filter from "./filter";
 import { Role } from "@/services/db/users";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Check } from "lucide-react-native";
 
 type SearchBarProps = {
@@ -13,39 +13,76 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
   const [selected, setSelected] = useState<Role[]>([])
   const [open, setOpen] = useState(false)
 
+  const toggleOpen = useCallback(() => setOpen(!open), [open]);
+
+
   function select(onSelect: (s: Role[]) => any) {
     setSelected(onSelect)
     onFilter(onSelect(selected))
   }
 
+  const [expanded, setExpanded] = useState(false);
+
+  const toggleExpanded = useCallback(() => setExpanded(!expanded), [expanded]);
+
+  const [value, setValue] = useState("");
+
+  const buttonRef = useRef<View>(null);
+
+  const [top, setTop] = useState(0);
+
   return (
-    <View className="flex flex-col">
-      <View className="flex flex-row px-4 py-2 gap-4 items-center">
-        <Filter onOpen={setOpen} />
-        <TextInput onChangeText={onSearch} className="w-full" placeholder="Buscar..." />
-      </View>
-      {open &&
-        <View className="w-full h-0 relative">
-          <View className='z-10 flex flex-col justify-between w-full bg-slate-50 absolute'>
-            {Object.values(Role).map(r => (
-              <Pressable onPress={() => {
-                select(s => {
-                  if (!s.includes(r)) {
-                    return [r, ...s]
-                  } else {
-                    return s.filter(sr => sr !== r)
-                  }
-                })
-              }} className="p-4 border border-gray-100 focus:bg-slate-200 flex flex-row justify-between">
-                <Text>Rol {r}</Text>
-                {selected.includes(r) &&
-                  <Check size={20} color='black' />
-                }
-              </Pressable>
-            ))}
-          </View>
+    <View>
+      <View
+        ref={buttonRef}
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          const topOffset = layout.y;
+          const heightOfComponent = layout.height;
+
+          const finalValue =
+            topOffset + heightOfComponent;
+
+          setTop(finalValue);
+        }}>
+        <View className="flex flex-row p-4 gap-4 items-center">
+          <Filter onOpen={toggleExpanded} />
+          <TextInput onChangeText={onSearch} className="w-full" placeholder="Buscar..." />
         </View>
-      }
+        {expanded ? (
+          <Modal visible={expanded} transparent>
+            <TouchableWithoutFeedback onPress={() => setExpanded(false)}>
+              <View style={styles.backdrop}>
+                <View
+                  style={[
+                    styles.options,
+                    {
+                      top,
+                    },
+                  ]}
+                >
+                  {Object.values(Role).map(r => (
+                    <Pressable key={r} onPress={() => {
+                      select(s => {
+                        if (!s.includes(r)) {
+                          return [r, ...s]
+                        } else {
+                          return s.filter(sr => sr !== r)
+                        }
+                      })
+                    }} className="p-4 border border-gray-100 flex flex-row justify-between">
+                      <Text>Rol {r}</Text>
+                      {selected.includes(r) &&
+                        <Check size={20} color='black' />
+                      }
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+        ) : null}
+      </View>
       {selected.length > 0 &&
         <View className="flex flex-row gap-2 p-2">
           {selected.map(r => (
@@ -58,6 +95,41 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
         </View>
       }
     </View>
-
-  )
+  );
 }
+
+const styles = StyleSheet.create({
+  backdrop: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
+  optionItem: {
+    height: 40,
+    justifyContent: "center",
+  },
+  separator: {
+    height: 4,
+  },
+  options: {
+    position: "absolute",
+    // top: 53,
+    backgroundColor: "white",
+    width: "100%",
+    borderRadius: 6,
+  },
+  text: {
+    fontSize: 15,
+    opacity: 0.8,
+  },
+  button: {
+    height: 50,
+    justifyContent: "space-between",
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    width: "100%",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+});

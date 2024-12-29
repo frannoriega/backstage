@@ -53,8 +53,6 @@ export default function Activity() {
       pathname: "/activity/[user]",
       params: {
         user: user.id,
-        name: user.name,
-        lastname: user.lastname
       }
     })
   }

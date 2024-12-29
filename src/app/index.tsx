@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Image } from "expo-image";
 import { Text, View } from "react-native";
@@ -14,7 +14,7 @@ import base64 from "react-native-base64";
 cssInterop(Image, { className: "style" });
 
 export default function Index() {
-  verifyInstallation();
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -26,20 +26,11 @@ export default function Index() {
 
   const signIn = async () => {
     try {
+      setError(null)
       await auth.signIn();
       router.push("/security");
     } catch (error: any) {
-      if (error instanceof SignInError) {
-        switch (error.reason) {
-          //TODO: Handle this gracefully
-          case SignInErrorReason.UNAUTHORIZED:
-            //TODO: Handle unauthorized error
-            break;
-          default:
-            break;
-        }
-      } else {
-      }
+      setError("Ocurrió un error al iniciar sesión.\n Intente más tarde o contáctese con Francisco Noriega")
     }
   };
 
@@ -53,8 +44,11 @@ export default function Index() {
         />
         <Text className="text-white text-6xl">Backstage</Text>
       </View>
-      <View>
+      <View className="flex flex-col gap-4">
         <AuthButton title="Iniciar sesión con Google" onPress={signIn} />
+        {error && 
+          <Text className="text-red-200 text-center w-64">{error}</Text>
+        }
       </View>
     </View>
   );

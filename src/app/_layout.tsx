@@ -21,11 +21,11 @@ export default function RootLayout() {
       />
       <Stack.Screen
         name="activity/[user]"
-        options={{ title: "Credencial", headerShown: true, headerStyle: style.header, headerTitleStyle: style.header, headerTintColor: 'white', contentStyle: style.all }}
+        options={{ title: "Última actividad", headerShown: true, headerStyle: style.header, headerTitleStyle: style.header, headerTintColor: 'white' }}
       />
       <Stack.Screen
         name="security"
-        options={{ title: "Seguridad", headerShown: false, contentStyle: style.all }}
+        options={{ title: "Seguridad", headerShown: false, contentStyle: style.content }}
       />
     </Stack>
   );
@@ -33,7 +33,10 @@ export default function RootLayout() {
 
 const style = StyleSheet.create({
   all: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: "black",
+  },
+  content: {
+    backgroundColor: "transparent"
   },
   header: {
     backgroundColor: "black",

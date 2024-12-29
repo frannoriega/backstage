@@ -2,16 +2,12 @@ import { State, User, userDb } from "@/services/db/users";
 import { Col, Grid, Row } from "react-native-easy-grid";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
-import { ActivityIndicator, View, Text, FlatList } from "react-native";
+import { ActivityIndicator, View, Text, FlatList, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityInfo, activityDb } from "@/services/db/activity";
 
 export default function UserScreen() {
-  const { user: id, name, lastname } = useLocalSearchParams();
-  const navigator = useNavigation();
-  navigator.setOptions({
-    title: `Actividad del usuario`
-  })
+  const { user: id } = useLocalSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [activity, setActivity] = useState<ActivityInfo[]>([])
 
@@ -33,47 +29,45 @@ export default function UserScreen() {
   }
 
   return (
-    <View className="w-full flex flex-col p-4 gap-8">
-      <Text className="text-2xl">Última ubicación registrada</Text>
-      <Text className="text-xl">{getState(user)}</Text>
-      <Text className="text-2xl">Información del usuario</Text>
-      <View className="flex flex-col">
-        <DataRow user={user} render={(user) => `${user.name} ${user.lastname}`}>Nombre</DataRow>
-        <DataRow user={user} render={(user) => user.dni}>DNI</DataRow>
-        <DataRow user={user} render={(user) => user.role}>Rol</DataRow>
-        {user.group && <DataRow user={user} render={(user) => user.group}>Grupo</DataRow>}
-        <DataRow user={user} render={(user) => user.phone}>Telefono</DataRow>
-        <DataRow last user={user} render={(user) => user.email}>Email</DataRow>
-      </View>
-      <Text className="text-2xl">Actividad reciente</Text>
-      <View className="flex flex-col">
-        <View className="flex flex-row">
-          <Text className="w-1/4 text-center text-bold">Fecha</Text>
-          <Text className="w-1/4 text-center text-bold">Movimiento</Text>
-          <Text className="w-1/4 text-center text-bold">Puerta</Text>
-          <Text className="w-1/4 text-center text-bold">Controlado por</Text>
+    <ScrollView className="w-full">
+      <View className="w-full flex flex-col pb-4 gap-8">
+        <Text className="text-2xl bg-blue-200 p-4">Última ubicación registrada</Text>
+        <Text className="text-2xl w-full text-center font-bold">{getState(user)}</Text>
+        <Text className="text-2xl bg-blue-200 p-4">Información del usuario</Text>
+        <View className="flex flex-col px-4">
+          <DataRow user={user} render={(user) => `${user.name} ${user.lastname}`}>Nombre</DataRow>
+          <DataRow user={user} render={(user) => user.dni}>DNI</DataRow>
+          <DataRow user={user} render={(user) => user.role}>Rol</DataRow>
+          {user.group && <DataRow user={user} render={(user) => user.group}>Grupo</DataRow>}
+          <DataRow user={user} render={(user) => user.phone}>Telefono</DataRow>
+          <DataRow last user={user} render={(user) => user.email}>Email</DataRow>
         </View>
-        <FlatList
-          className="border border-b-0 border-slate-700"
-          data={activity}
-          renderItem={({ item }) => (
-            <View className="flex flex-row items-center justify-center">
-              <Text className="w-1/4 text-center text-bold h-full align-middle border-b border-slate-700">{formatDate(new Date(item.created_at))}</Text>
-              <Text className="w-1/4 text-center text-bold h-full align-middle border-b border-l border-slate-700">{formatMovement(item.movement)}</Text>
-              <Text className="w-1/4 text-center text-bold h-full align-middle border-b border-l border-slate-700">{item.gate}</Text>
-              <Text className="w-1/4 text-center text-bold h-full align-middle border-b border-l border-slate-700">{item.controller.name} {item.controller.lastname}</Text>
+        <Text className="text-2xl bg-blue-200 p-4">Actividad reciente</Text>
+        <View className="flex flex-col px-4">
+          <View className="flex flex-row">
+            <Text className="w-1/4 text-center">Fecha</Text>
+            <Text className="w-1/4 text-center">Movimiento</Text>
+            <Text className="w-1/4 text-center">Puerta</Text>
+            <Text className="w-1/4 text-center">Controlado por</Text>
+          </View>
+          {activity.map(a => (
+            <View key={a.created_at} className="border border-b-0 border-slate-700 flex flex-row items-center justify-center">
+              <Text className="w-1/4 text-center h-full align-middle border-b border-slate-700">{formatDate(new Date(a.created_at))}</Text>
+              <Text className="w-1/4 text-center h-full align-middle border-b border-l border-slate-700">{formatMovement(a.movement)}</Text>
+              <Text className="w-1/4 text-center h-full align-middle border-b border-l border-slate-700">{a.gate}</Text>
+              <Text className="w-1/4 text-center h-full align-middle border-b border-l border-slate-700">{a.controller.name} {a.controller.lastname}</Text>
             </View>
-          )}
-        />
+          ))}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
 function DataRow({ user, children, render, last = false }: { user: User, render: (user: User) => ReactNode, last?: boolean } & React.ComponentProps<"div">) {
   return (
     <View className="flex flex-row justify-between">
-      <Text className={`p-4 text-xl border border-slate-700 w-1/3 border-r-0 ${!last && 'border-b-0'}`}>{children}</Text>
+      <Text className={`bg-blue-200 p-4 text-xl border border-slate-700 w-1/3 border-r-0 ${!last && 'border-b-0'}`}>{children}</Text>
       <Text className={`p-4 text-xl border border-slate-700 w-2/3 ${!last && 'border-b-0'}`}>{render(user)}</Text>
     </View>
   )
@@ -86,7 +80,7 @@ function getState(user: User): string {
     case State.OUTSIDE:
       return "Afuera"
     case State.CHECKPOINT:
-      return "Cinta fáctica"
+      return "Cinta asfáltica"
     case State.BACKSTAGE:
       return "Backstage (Zona A)"
     case State.BAND:
@@ -95,7 +89,9 @@ function getState(user: User): string {
 }
 
 function formatDate(date: Date): string {
-  return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}/${date.getMonth()}`
+  const localTime = date
+  localTime.setHours(localTime.getHours() - 3)
+  return `${localTime.getHours()}:${localTime.getMinutes()} ${localTime.getDate()}/${localTime.getMonth()}`
 }
 
 function formatMovement(movement: 'INGRESS' | 'EGRESS'): string {

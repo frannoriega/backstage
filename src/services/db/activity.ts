@@ -39,17 +39,6 @@ class ActivityDb {
     }) 
   }
 
-  async grantPass(id: number, controller: Controller) {
-    await supabase
-      .from("pass")
-      .insert({
-        user: id,
-        granted_by: controller.id,
-        gate: controller.gate
-      })
-      .eq("id", id);
-  }
-
   async registerMovement(
     user: User,
     controller: Controller,

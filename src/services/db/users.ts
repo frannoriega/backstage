@@ -74,10 +74,10 @@ class UserDb {
     if (error || !data) {
       //TODO: Handle this error
       console.error("getUsers: ", error)
-      throw new Error()
+      throw error
     }
     return {
-      data,
+      data: data ?? [],
       next: (offset + this.PAGE_SIZE - 1) < (count ?? 0),
       prev: page > 0
     }
@@ -114,8 +114,8 @@ class UserDb {
       role: data.role,
       photo_url: photoUrl?.signedUrl,
       group: data.groups?.name,
-      valid_from: new Date(data.valid_from),
-      valid_to: new Date(data.valid_to),
+      valid_from: data.valid_from ? new Date(data.valid_from) : undefined,
+      valid_to: data.valid_from ? new Date(data.valid_to) : undefined,
       enabled: data.enabled,
       state: {
         state: data.user_state.state,

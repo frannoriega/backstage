@@ -46,8 +46,8 @@ export abstract class RoleFsm {
   protected getDates(): { today: Date, tomorrow: Date } {
     const today = new Date();
     const tomorrow = new Date(today.getTime());
-    today.setHours(17, 0, 0, 0);
-    tomorrow.setHours(10, 0, 0, 0);
+    today.setHours(15, 0, 0, 0);
+    tomorrow.setHours(13, 0, 0, 0);
     tomorrow.setUTCDate(today.getUTCDate() + 1);
 
     return {
@@ -200,6 +200,9 @@ export class RoleBFsm extends RoleFsm {
       return denied
     }
 
+    console.log("today: ", today.toUTCString())
+    console.log("updated: ", this.user.state.updated_at.toUTCString())
+    console.log("new date: ", new Date(Date.now()))
     switch (this.user.state.state) {
       case State.OUTSIDE: {
         if (gate != Gate.S1) {
