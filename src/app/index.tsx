@@ -30,6 +30,7 @@ export default function Index() {
       await auth.signIn();
       router.push("/security");
     } catch (error: any) {
+      console.error(error)
       setError("Ocurrió un error al iniciar sesión.\n Intente más tarde o contáctese con Francisco Noriega")
     }
   };

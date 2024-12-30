@@ -68,7 +68,7 @@ export default function Activity() {
   return (
     <SafeAreaView className="flex-1 flex-col items-center">
       <View className="w-full">
-        <SearchBar onSearch={search} onFilter={filter}/>
+        <SearchBar onSearch={search} onFilter={filter} />
       </View>
       <FlatList
         data={users}
@@ -83,12 +83,11 @@ export default function Activity() {
         )}
       />
       <View className="flex flex-row items-center py-4">
-        {        <Pressable onPress={() => setPage(p => p - 1)}>
+        <Pressable onPress={() => setPage(p => p - 1)} className={`${prev ? "block" : "invisible"}`}>
           <ChevronLeft size={34} color='black' />
         </Pressable>
-        }
-        <Text className="p-4 bg-blue-200 rounded-xl">{page + 1}</Text>
-        {        <Pressable onPress={() => setPage(p => p + 1)}>
+        <Text className="p-4 rounded-xl">{page + 1}</Text>
+        {<Pressable onPress={() => setPage(p => p + 1)} className={`${prev ? "block" : "invisible"}`}>
           <ChevronRight size={34} color='black' />
         </Pressable>
         }
@@ -96,34 +95,3 @@ export default function Activity() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 16 },
-  dropdown: {
-    height: 50,
-    backgroundColor: 'transparent',
-    borderBottomColor: 'gray',
-    borderBottomWidth: 0.5,
-    padding: 16,
-  },
-  placeholderStyle: {
-    fontSize: 16,
-  },
-  selectedTextStyle: {
-    fontSize: 14,
-  },
-  iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-  },
-  icon: {
-    marginRight: 5,
-  },
-  selectedStyle: {
-    borderRadius: 999999,
-  },
-});

@@ -61,18 +61,18 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
                     },
                   ]}
                 >
-                  {Object.values(Role).map(r => (
-                    <Pressable key={r} onPress={() => {
+                  {Object.entries(Role).map(([r, v]) => (
+                    <Pressable key={v} onPress={() => {
                       select(s => {
-                        if (!s.includes(r)) {
+                        if (!s.includes(v)) {
                           return [r, ...s]
                         } else {
                           return s.filter(sr => sr !== r)
                         }
                       })
                     }} className="p-4 border border-gray-100 flex flex-row justify-between">
-                      <Text>Rol {r}</Text>
-                      {selected.includes(r) &&
+                      <Text>Nivel {r}</Text>
+                      {selected.includes(v) &&
                         <Check size={20} color='black' />
                       }
                     </Pressable>
@@ -89,7 +89,7 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
             <Pressable onPress={() => select(s => {
               return s.filter(sr => sr !== r)
             })}>
-              <Text className="px-4 py-1 border border-gray-600 bg-blue-100 rounded-full">Rol {r}</Text>
+              <Text className="px-4 py-1 border border-gray-600 bg-blue-100 rounded-full">Nivel {r}</Text>
             </Pressable>
           ))}
         </View>
