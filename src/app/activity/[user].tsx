@@ -2,9 +2,11 @@ import { State, User, userDb } from "@/services/db/users";
 import { Col, Grid, Row } from "react-native-easy-grid";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
-import { ActivityIndicator, View, Text, FlatList, ScrollView } from "react-native";
+import { ActivityIndicator, View, Text, FlatList, ScrollView, Pressable, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityInfo, activityDb } from "@/services/db/activity";
+import { Link } from "@react-navigation/native";
+import { Phone } from "lucide-react-native";
 
 export default function UserScreen() {
   const { user: id } = useLocalSearchParams();
@@ -35,12 +37,16 @@ export default function UserScreen() {
         <Text className="text-2xl w-full text-center font-bold">{getState(user)}</Text>
         <Text className="text-2xl bg-blue-200 p-4">Información del usuario</Text>
         <View className="flex flex-col gap-0 mx-4 rounded-xl bg-white overflow-hidden" style={{ elevation: 1 }}>
-          <DataRow user={user} render={(user) => `${user.name} ${user.lastname}`}>Nombre</DataRow>
-          <DataRow user={user} render={(user) => user.dni}>DNI</DataRow>
-          <DataRow user={user} render={(user) => user.role}>Rol</DataRow>
-          {user.group && <DataRow user={user} render={(user) => user.group}>Grupo</DataRow>}
-          <DataRow user={user} render={(user) => user.phone}>Telefono</DataRow>
-          <DataRow user={user} render={(user) => user.email}>Email</DataRow>
+          <DataRow user={user} render={(user) => <Text>{`${user.name} ${user.lastname}`}</Text>}>Nombre</DataRow>
+          <DataRow user={user} render={(user) => <Text>{user.dni}</Text>}>DNI</DataRow>
+          <DataRow user={user} render={(user) => <Text>{user.role}</Text>}>Rol</DataRow>
+          {user.group && <DataRow user={user} render={(user) => <Text>{user.group}</Text>}>Grupo</DataRow>}
+          <DataRow user={user} render={(user) => (
+            <Pressable className="flex flex-row gap-4" onPress={() => Linking.openURL(`tel:${user.phone}`)}>
+              <Phone size={18} color='black'/>
+              <Text className="text-black">{user.phone}</Text>
+            </Pressable>)}>Telefono</DataRow>
+          <DataRow user={user} render={(user) => <Text>{user.email}</Text>}>Email</DataRow>
         </View>
         <Text className="text-2xl bg-blue-200 p-4">Actividad reciente</Text>
         <View className="flex flex-col px-4 gap-2">
@@ -50,7 +56,7 @@ export default function UserScreen() {
             <Text className="w-1/4 text-center">Puerta</Text>
             <Text className="w-1/4 text-center">Controlado por</Text>
           </View>
-          <View className="flex flex-col bg-white rounded-xl" style={{elevation: 1}}>
+          <View className="flex flex-col bg-white rounded-xl" style={{ elevation: 1 }}>
             {activity.map((a, i) => (
               <View key={a.created_at} className={`flex flex-row items-center justify-center p-2 ${i == activity.length - 1 ? null : "border-b border-gray-200"}`}>
                 <Text className="w-1/4 text-center h-full align-middle">{formatDate(new Date(a.created_at))}</Text>
@@ -66,11 +72,11 @@ export default function UserScreen() {
   )
 }
 
-function DataRow({ user, children, render}: { user: User, render: (user: User) => ReactNode } & React.ComponentProps<"div">) {
+function DataRow({ user, children, render }: { user: User, render: (user: User) => ReactNode } & React.ComponentProps<"div">) {
   return (
     <View className="flex flex-row justify-between">
       <Text className={`bg-blue-200 p-4 text-xl w-1/3 text-right`}>{children}</Text>
-      <Text className={`p-4 text-xl  w-2/3`}>{render(user)}</Text>
+      <View className={`p-4 text-xl  w-2/3`}>{render(user)}</View>
     </View>
   )
 }

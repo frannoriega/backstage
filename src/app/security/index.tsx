@@ -29,10 +29,11 @@ export default function Security() {
     getCameraPermissions();
   }, []);
 
-  async function handleBarcodeScanned(data: { signature: string, data: any }) {
+  async function handleBarcodeScanned({ data }: {  data: any }) {
     setScanned(true);
     try {
-      const credential = await credentialService.decrypt(data);
+      console.log("data: ", data)
+      const credential = await credentialService.decrypt(JSON.parse(data));
       const controller = await store.getController();
       if (controller) {
         router.push({
@@ -43,10 +44,10 @@ export default function Security() {
         });
       } else {
         //TODO: Handle error
-        router.push("/");
+        throw new Error()
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
       router.push("/credential/invalid")
     }
   }
@@ -65,16 +66,15 @@ export default function Security() {
     )
   }
 
-  // <CameraView
-  //   onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-  //   barcodeScannerSettings={{
-  //     barcodeTypes: ["qr", "pdf417"],
-  //   }}
-  //   style={StyleSheet.absoluteFillObject}
-  // />
   return (
     <View className="flex-1 justify-center">
-      <Button title="test" onPress={() => handleBarcodeScanned()} />
+      <CameraView
+        onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr", "pdf417"],
+        }}
+        style={StyleSheet.absoluteFillObject}
+      />
     </View>
   );
 }

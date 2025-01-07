@@ -19,8 +19,7 @@ export default function Activity() {
 
   useEffect(() => {
     const init = async () => {
-      console.log(page)
-      const users = await userDb.getUsers(page, filterInput, searchInput).catch(e => {
+      const users = await userDb.getUsers(page, filterInput, searchInput).catch(_ => {
         return {
           data: [],
           next: false,
@@ -58,10 +57,12 @@ export default function Activity() {
   }
 
   function search(text: string) {
+    setPage(0)
     setSearchInput(text)
   }
 
   function filter(roles: Role[]) {
+    setPage(0)
     setFilterInput(roles)
   }
 
@@ -82,12 +83,12 @@ export default function Activity() {
           </Pressable>
         )}
       />
-      <View className="flex flex-row items-center py-4">
-        <Pressable onPress={() => setPage(p => p - 1)} className={`${prev ? "block" : "invisible"}`}>
+      <View className="flex flex-row items-center justify-center py-3 border-t border-gray-700 w-full">
+        <Pressable onPress={() => setPage(p => p - 1)} className={`${prev ? "visible" : "invisible"}`} disabled={!prev}>
           <ChevronLeft size={34} color='black' />
         </Pressable>
-        <Text className="p-4 rounded-xl">{page + 1}</Text>
-        {<Pressable onPress={() => setPage(p => p + 1)} className={`${prev ? "block" : "invisible"}`}>
+        <Text className="p-4 rounded-xl text-xl">{page + 1}</Text>
+        {<Pressable onPress={() => setPage(p => p + 1)} className={`${next ? "visible" : "invisible"}`} disabled={!next}>
           <ChevronRight size={34} color='black' />
         </Pressable>
         }

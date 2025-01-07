@@ -73,7 +73,6 @@ class UserDb {
       .range(offset, offset + this.PAGE_SIZE - 1)
     if (error || !data) {
       //TODO: Handle this error
-      console.error("getUsers: ", error)
       throw error
     }
     return {

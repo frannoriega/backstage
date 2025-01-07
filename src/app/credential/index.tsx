@@ -12,6 +12,7 @@ import { AccessInfo, createFsm } from "@/services/fsms";
 export default function ScannedUserPage() {
   const { credential: encodedCredential }: { credential: string } =
     useLocalSearchParams();
+  console.log(encodedCredential)
   const credential = Credential.fromBase64(encodedCredential);
 
   const [state, setState] = useState<{ user: User, controller: Controller, accessInfo: AccessInfo } | null>(null)
@@ -81,7 +82,7 @@ export default function ScannedUserPage() {
   if (state) {
     return (
       <View className="flex-1 justify-evenly items-center gap-8 py-24 px-8 w-full">
-        <View className="bg-white flex-2 items-center h-fit w-full gap-2 pt-8 border border-white rounded-xl overflow-hidden" style={{ elevation: 1 }}>
+        <View className="bg-white flex-2 items-center h-fit w-full gap-2 pt-8 rounded-xl overflow-hidden min-w-4/5" style={{ elevation: 1 }}>
           {state.user &&
             <Image source={state.user.photo_url} className="h-80 w-80 rounded-xl border" />
           }

@@ -42,32 +42,11 @@ class CredentialError extends Error {
 
 class Credential {
   readonly id: number;
-  readonly name: string;
-  readonly lastname: string;
-  readonly email: string;
-  readonly dni: number;
-  readonly role: Role;
-  readonly valid_from?: string;
-  readonly valid_to?: string;
 
   constructor(
     id: number,
-    name: string,
-    lastname: string,
-    email: string,
-    dni: number,
-    role: Role,
-    valid_from?: string,
-    valid_to?: string,
   ) {
     this.id = id;
-    this.name = name;
-    this.lastname = lastname;
-    this.email = email;
-    this.dni = dni;
-    this.role = role;
-    this.valid_from = valid_from;
-    this.valid_to = valid_to;
   }
 
   static toBase64(credential: Credential): string {
@@ -93,35 +72,13 @@ const credentialSchema = {
     id: {
       type: "number",
     },
-    name: {
-      type: "string",
-    },
-    lastname: {
-      type: "string",
-    },
-    email: {
-      type: "string",
-    },
-    dni: {
-      type: "number",
-    },
-    role: {
-      enum: [Role.A, Role.B, Role.C, Role.D, Role.E, Role.P, Role.X],
-    },
-    valid_from: {
-      type: "string",
-      nullable: true,
-    },
-    valid_to: {
-      type: "string",
-      nullable: true,
-    },
   },
-  required: ["id", "name", "lastname", "email", "dni", "role"],
+  required: ["id"],
 };
 
 class CredentialService {
   async decrypt(credentials: { signature: string, data: any }): Promise<Credential> {
+    console.log("credentials: ", credentials.signature)
     const decrypted = crypto.publicDecrypt(
       {
         key: PUBLIC_KEY,
