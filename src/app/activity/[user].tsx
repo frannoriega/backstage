@@ -1,12 +1,10 @@
 import { State, User, userDb } from "@/services/db/users";
-import { Col, Grid, Row } from "react-native-easy-grid";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
-import { ActivityIndicator, View, Text, FlatList, ScrollView, Pressable, Linking } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, View, Text, ScrollView, Pressable, Linking } from "react-native";
 import { ActivityInfo, activityDb } from "@/services/db/activity";
-import { Link } from "@react-navigation/native";
 import { Phone } from "lucide-react-native";
+import { Image } from "expo-image"
 
 export default function UserScreen() {
   const { user: id } = useLocalSearchParams();
@@ -36,37 +34,44 @@ export default function UserScreen() {
         <Text className="text-2xl bg-blue-200 p-4">Última ubicación registrada</Text>
         <Text className="text-2xl w-full text-center font-bold">{getState(user)}</Text>
         <Text className="text-2xl bg-blue-200 p-4">Información del usuario</Text>
-        <View className="flex flex-col gap-0 mx-4 rounded-xl bg-white overflow-hidden" style={{ elevation: 1 }}>
+        <View className="flex flex-col items-center justify-center gap-0 mx-4 rounded-xl bg-white overflow-hidden" style={{ elevation: 1 }}>
+          <View className="p-4">
+            <Image source={user.photo_url} className="h-80 w-80 rounded-xl border" />
+          </View>
           <DataRow user={user} render={(user) => <Text>{`${user.name} ${user.lastname}`}</Text>}>Nombre</DataRow>
           <DataRow user={user} render={(user) => <Text>{user.dni}</Text>}>DNI</DataRow>
           <DataRow user={user} render={(user) => <Text>{user.role}</Text>}>Rol</DataRow>
           {user.group && <DataRow user={user} render={(user) => <Text>{user.group}</Text>}>Grupo</DataRow>}
           <DataRow user={user} render={(user) => (
             <Pressable className="flex flex-row gap-4" onPress={() => Linking.openURL(`tel:${user.phone}`)}>
-              <Phone size={18} color='black'/>
+              <Phone size={18} color='black' />
               <Text className="text-black">{user.phone}</Text>
             </Pressable>)}>Telefono</DataRow>
           <DataRow user={user} render={(user) => <Text>{user.email}</Text>}>Email</DataRow>
         </View>
-        <Text className="text-2xl bg-blue-200 p-4">Actividad reciente</Text>
-        <View className="flex flex-col px-4 gap-2">
-          <View className="flex flex-row">
-            <Text className="w-1/4 text-center">Fecha</Text>
-            <Text className="w-1/4 text-center">Movimiento</Text>
-            <Text className="w-1/4 text-center">Puerta</Text>
-            <Text className="w-1/4 text-center">Controlado por</Text>
-          </View>
-          <View className="flex flex-col bg-white rounded-xl" style={{ elevation: 1 }}>
-            {activity.map((a, i) => (
-              <View key={a.created_at} className={`flex flex-row items-center justify-center p-2 ${i == activity.length - 1 ? null : "border-b border-gray-200"}`}>
-                <Text className="w-1/4 text-center h-full align-middle">{formatDate(new Date(a.created_at))}</Text>
-                <Text className="w-1/4 text-center h-full align-middle">{formatMovement(a.movement)}</Text>
-                <Text className="w-1/4 text-center h-full align-middle">{a.gate}</Text>
-                <Text className="w-1/4 text-center h-full align-middle">{a.controller.name} {a.controller.lastname}</Text>
+        {activity.length > 0 && 
+          <>
+            <Text className="text-2xl bg-blue-200 p-4">Actividad reciente</Text>
+            <View className="flex flex-col px-4 gap-2">
+              <View className="flex flex-row">
+                <Text className="w-1/4 text-center">Fecha</Text>
+                <Text className="w-1/4 text-center">Movimiento</Text>
+                <Text className="w-1/4 text-center">Puerta</Text>
+                <Text className="w-1/4 text-center">Controlado por</Text>
               </View>
-            ))}
-          </View>
-        </View>
+              <View className="flex flex-col bg-white rounded-xl" style={{ elevation: 1 }}>
+                {activity.map((a, i) => (
+                  <View key={a.created_at} className={`flex flex-row items-center justify-center p-2 ${i == activity.length - 1 ? null : "border-b border-gray-200"}`}>
+                    <Text className="w-1/4 text-center h-full align-middle">{formatDate(new Date(a.created_at))}</Text>
+                    <Text className="w-1/4 text-center h-full align-middle">{formatMovement(a.movement)}</Text>
+                    <Text className="w-1/4 text-center h-full align-middle">{a.gate}</Text>
+                    <Text className="w-1/4 text-center h-full align-middle">{a.controller.name} {a.controller.lastname}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </>
+        }
       </View>
     </ScrollView>
   )

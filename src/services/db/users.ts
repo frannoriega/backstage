@@ -97,7 +97,7 @@ class UserDb {
       return null
     }
     const { data: photoUrl, error: photoError } = await supabase.storage.from('photos')
-      .createSignedUrl(`${data.id}.jpg`, 3600)
+      .createSignedUrl(`${data.dni}.jpg`, 3600)
     if (!photoUrl || photoError) {
       //TODO: Handle this error
       console.error("no photo", photoError)
