@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Image } from "expo-image";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { router } from "expo-router";
 import { cssInterop, verifyInstallation } from "nativewind";
 import AuthButton from "@/components/Auth.native";
@@ -15,6 +15,7 @@ cssInterop(Image, { className: "style" });
 
 export default function Index() {
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -27,11 +28,14 @@ export default function Index() {
   const signIn = async () => {
     try {
       setError(null)
+      setLoading(true)
       await auth.signIn();
       router.push("/security");
     } catch (error: any) {
       console.error(error)
       setError("Ocurrió un error al iniciar sesión.\n Intente más tarde o contáctese con Francisco Noriega")
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -47,9 +51,10 @@ export default function Index() {
       </View>
       <View className="flex flex-col gap-4">
         <AuthButton title="Iniciar sesión con Google" onPress={signIn} />
-        {error && 
-          <Text className="text-red-200 text-center w-64">{error}</Text>
-        }
+        <Text className={`text-red-200 text-center w-64 ${error ? "visible" : "invisible"}`}>{error}</Text>
+      </View>
+      <View className={`flex-1 justify-center items-center ${loading ? "visible" : "invisible"}`}>
+        <ActivityIndicator size="large" />
       </View>
     </View>
   );

@@ -11,10 +11,6 @@ type SearchBarProps = {
 
 export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
   const [selected, setSelected] = useState<Role[]>([])
-  const [open, setOpen] = useState(false)
-
-  const toggleOpen = useCallback(() => setOpen(!open), [open]);
-
 
   function select(onSelect: (s: Role[]) => any) {
     setSelected(onSelect)
@@ -22,10 +18,7 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
   }
 
   const [expanded, setExpanded] = useState(false);
-
   const toggleExpanded = useCallback(() => setExpanded(!expanded), [expanded]);
-
-  const [value, setValue] = useState("");
 
   const buttonRef = useRef<View>(null);
 
@@ -61,10 +54,10 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
                     },
                   ]}
                 >
-                  {Object.entries(Role).map(([r, v]) => (
-                    <Pressable key={v} onPress={() => {
+                  {Object.values(Role).map(r => (
+                    <Pressable key={r} onPress={() => {
                       select(s => {
-                        if (!s.includes(v)) {
+                        if (!s.includes(r)) {
                           return [r, ...s]
                         } else {
                           return s.filter(sr => sr !== r)
@@ -72,7 +65,7 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
                       })
                     }} className="p-4 border border-gray-100 flex flex-row justify-between">
                       <Text>Nivel {r}</Text>
-                      {selected.includes(v) &&
+                      {selected.includes(r) &&
                         <Check size={20} color='black' />
                       }
                     </Pressable>
@@ -86,7 +79,7 @@ export default function SearchBar({ onSearch, onFilter }: SearchBarProps) {
       {selected.length > 0 &&
         <View className="flex flex-row gap-2 p-2">
           {selected.map(r => (
-            <Pressable onPress={() => select(s => {
+            <Pressable key={r} onPress={() => select(s => {
               return s.filter(sr => sr !== r)
             })}>
               <Text className="px-4 py-1 border border-gray-600 bg-blue-100 rounded-full">Nivel {r}</Text>
