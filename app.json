@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "backstage",
-    "slug": "backstage",
+    "name": "Backstage",
+    "slug": "Backstage",
     "scheme": "com.fiestadelaplaya.backstage",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -26,8 +26,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#000000"
       },
       "package": "com.fiestadelaplaya.backstage",
       "googleServicesFile": "./google-services.json"

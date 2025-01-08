@@ -8,27 +8,30 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import Access from "@/components/access";
 import { AccessInfo, createFsm } from "@/services/fsms";
+import ErrorModal from "@/components/error";
 
 export default function ScannedUserPage() {
   const { credential: encodedCredential }: { credential: string } =
     useLocalSearchParams();
-  console.log(encodedCredential)
   const credential = Credential.fromBase64(encodedCredential);
 
   const [state, setState] = useState<{ user: User, controller: Controller, accessInfo: AccessInfo } | null>(null)
   const [roleClassName, setRoleClassName] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [spectator, setSpectator] = useState(false)
 
   useEffect(() => {
     const init = async () => {
+      setError(null)
       const controller = await store.getController();
       const user = await userDb.getUser(credential.id);
-      console.log("user: ", user)
       if (controller && user) {
         const accessInfo = createFsm(user)
           .canAccess(controller.gate)
-        console.log("access info: ", accessInfo)
+        if (!controller.gate) {
+          setSpectator(true)
+        }
         setState({
           user,
           controller,
@@ -58,13 +61,13 @@ export default function ScannedUserPage() {
             break
         }
       }
-      setLoading(false)
     };
 
     init()
-      .catch((e) => {
-        setError("Exploto todo")
-      });
+      .catch(e => {
+        setError(e.stack)
+      })
+      .finally(() => setLoading(false))
   }, []);
 
   if (loading) {
@@ -75,10 +78,14 @@ export default function ScannedUserPage() {
     )
   }
 
-  // if (error) {
-  //   return <Text>{error}</Text>
-  // }
-  //
+  if (error) {
+    return (
+      <View className="flex flex-col h-full w-full items-center justify-center p-4 bg-black">
+        <ErrorModal stacktrace={error} />
+      </View>
+    )
+  }
+
   if (state) {
     return (
       <View className="flex-1 justify-evenly items-center gap-8 py-24 px-8 w-full">
@@ -104,7 +111,9 @@ export default function ScannedUserPage() {
             </Text>
           </View>
         </View>
-        <Access user={state.user} controller={state.controller} accessInfo={state.accessInfo} />
+        {!spectator &&
+          <Access user={state.user} controller={state.controller} accessInfo={state.accessInfo} />
+        }
       </View>
     );
   } else {

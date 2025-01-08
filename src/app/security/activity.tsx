@@ -7,9 +7,11 @@ import { View, Text, ActivityIndicator, Pressable, FlatList, StyleSheet, Touchab
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RollInLeft } from "react-native-reanimated";
 import SearchBar from "@/components/searchbar";
+import ErrorModal from "@/components/error";
 
 export default function Activity() {
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [users, setUsers] = useState<UserId[]>([])
   const [page, setPage] = useState(0)
   const [next, setNext] = useState(false)
@@ -19,6 +21,7 @@ export default function Activity() {
 
   useEffect(() => {
     const init = async () => {
+      setError(null)
       const users = await userDb.getUsers(page, filterInput, searchInput).catch(_ => {
         return {
           data: [],
@@ -33,10 +36,11 @@ export default function Activity() {
       setUsers(users.data)
       setNext(users.next)
       setPrev(users.prev)
-      setLoading(false)
     }
 
     init()
+      .catch(e => setError(e.stack))
+      .finally(() => setLoading(false))
   }, [filterInput, searchInput, page])
 
   if (loading) {
@@ -46,6 +50,15 @@ export default function Activity() {
       </View>
     )
   }
+
+  if (error) {
+    return (
+      <View className="flex flex-col h-full w-full items-center justify-center p-4 bg-black">
+        <ErrorModal stacktrace={error} />
+      </View>
+    )
+  }
+
 
   function goToUser(user: UserId) {
     router.push({

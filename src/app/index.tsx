@@ -3,14 +3,12 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Image } from "expo-image";
 import { ActivityIndicator, Text, View } from "react-native";
 import { router } from "expo-router";
-import { cssInterop, verifyInstallation } from "nativewind";
+import { cssInterop } from "nativewind";
 import AuthButton from "@/components/Auth.native";
 
-import { SignInError, SignInErrorReason, auth } from "@/services/auth";
-import { store } from "@/services/storage";
-import { supabase } from "@/utils/supabase";
-import base64 from "react-native-base64";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { auth } from "@/services/auth";
+import { CircleX } from "lucide-react-native";
+import ErrorModal from "@/components/error";
 
 cssInterop(Image, { className: "style" });
 
@@ -30,12 +28,10 @@ export default function Index() {
     try {
       setError(null)
       setLoading(true)
-      throw new Error()
       await auth.signIn();
       router.push("/security");
     } catch (error: any) {
-      console.error(error)
-      setError("Ocurrió un error al iniciar sesión.\n Intente más tarde o contáctese con Francisco Noriega")
+      setError(error.stack)
     } finally {
       setLoading(false)
     }
@@ -51,11 +47,13 @@ export default function Index() {
         />
         <Text className="text-white text-6xl">Backstage</Text>
       </View>
-      <View className="flex flex-col gap-4 h-min items-center">
-        <AuthButton title="Iniciar sesión con Google" onPress={signIn} />
-        <Text className={`text-red-200 text-center w-20 ${error ? "visible" : "invisible"}`}>{error}</Text>
+      <View className="flex flex-col gap-8 h-min w-72 items-center">
+        <AuthButton textClassName="text-white font-medium text-lg text-center" className="w-full rounded-md bg-blue-700 p-3" title="Iniciar sesión con Google" onPress={signIn} />
+        {error &&
+          <ErrorModal stacktrace={error}/>
+        }
       </View>
-      <View className={`flex h-min justify-center items-center ${loading ? "visible" : "invisible"}`}>
+      <View className={`mt-4 flex h-min justify-center items-center ${loading ? "visible" : "invisible"}`}>
         <ActivityIndicator size="large" />
       </View>
     </View>
